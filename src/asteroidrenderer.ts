@@ -8,7 +8,7 @@ export default class AsteroidRenderer {
     }
 
     static generateAsteroidShape(numPoints: number, radius: number) {
-        const points = [];
+        const points:{ x: number; y: number; }[] = [];
         const angleStep = (Math.PI * 2) / numPoints;
         let angle = 0;
         // Generate random points within a circle
@@ -17,7 +17,7 @@ export default class AsteroidRenderer {
             const distance = radius + (Math.random() * radius/4);
             const x = Math.cos(angle) * distance;
             const y = Math.sin(angle) * distance;
-            points.push({ x, y });
+            points.push({ x: x, y: y });
         }
     
         // Perturb the position of each point
