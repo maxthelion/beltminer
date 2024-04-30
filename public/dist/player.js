@@ -18,9 +18,10 @@ var Player = /** @class */ (function (_super) {
     __extends(Player, _super);
     function Player() {
         var _this = _super.call(this) || this;
-        _this.acceleration = 0.01;
+        _this.acceleration = 0.0005;
         _this.rotationalAcceleration = 0.05;
         _this.color = 'grey';
+        _this.accelerating = false;
         _this.direction = Math.random() * Math.PI * 2;
         _this.lockedAsteroid = null;
         return _this;
@@ -34,7 +35,7 @@ var Player = /** @class */ (function (_super) {
         }
     };
     Player.prototype.shipLength = function () {
-        return 5;
+        return 3;
     };
     return Player;
 }(Sprite));

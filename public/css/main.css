@@ -1,0 +1,15 @@
+body {
+    background-color: darkslategrey;
+}
+#container {
+    margin-top: 40px;
+    width: 80%;
+    margin: 0 auto;
+}
+#holder {
+    display: grid;
+    grid-template-columns: 1fr 300px;
+}
+#canvas2 {
+    width: 100%;
+}

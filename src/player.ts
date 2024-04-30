@@ -2,10 +2,11 @@ import {Sprite, Asteroid} from './sprites.js';
 
 export default class Player extends Sprite {
     direction: number;
-    acceleration = 0.01;
+    acceleration = 0.0005;
     rotationalAcceleration = 0.05;
     color = 'grey';
     lockedAsteroid: Asteroid | null;
+    accelerating = false;
 
     constructor() {
         super();
@@ -23,7 +24,7 @@ export default class Player extends Sprite {
     }
 
     shipLength() {
-        return 5;
+        return 3;
     }
 
 

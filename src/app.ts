@@ -11,8 +11,8 @@ export default class App {
     viewPort = {
         x: 0,
         y: 0,
-        width: 40,
-        height: 40
+        width: 100,
+        height: 100
     };
     pressedKeys = {
         "ArrowLeft": false,
@@ -23,6 +23,8 @@ export default class App {
     player: Player;
     solarSystem: SolarSystem;
     constructor() {
+        let largeHolderWidth = document.getElementById("largeholder")?.clientWidth;
+        
         this.sprites = [];
         this.player = new Player();
         this.sprites.push(this.player);
@@ -32,8 +34,13 @@ export default class App {
             this.asteroids.push(new Asteroid(this.solarSystem));
         }
         this.smallGameCanvas = new SmallGameCanvas(this);
-        this.largeGameCanvas = new LargeGameCanvas(this);
+        this.largeGameCanvas = new LargeGameCanvas(this, largeHolderWidth || 800);
         this.gameLoop = new GameLoop(this);
+        window.addEventListener("resize", () => {
+            console.log("resize");
+            largeHolderWidth = document.getElementById("largeholder")?.clientWidth;
+            this.largeGameCanvas.setWidth(largeHolderWidth || 800);
+        });
         document.addEventListener('keydown', (e) => {
             if (this.pressedKeys[e.key] !== undefined) {
                 this.pressedKeys[e.key] = true;
@@ -58,7 +65,7 @@ class GameCanvas {
     ctx!: CanvasRenderingContext2D;
     app: App;
 
-    constructor(app: App) {
+    constructor(app: App, width: number = 800) {
         this.app = app;
     }
 
@@ -77,21 +84,39 @@ class GameCanvas {
 
 export class SolarSystem {
     asteroidNum = 200;
-    centerX = 200;
-    centerY = 200;
+    centerX = 0;
+    centerY = 0;
     minRadius = 150;
     maxRadius = 250;
+    width: number;
+    height: number;
 
     constructor(){
-
+        this.width = this.maxRadius * 2 + 100;
+        this.height = this.maxRadius * 2 + 100;
     }
 }
 
 class LargeGameCanvas extends GameCanvas {
-    constructor(app: App) {
-        super(app);
+    constructor(app: App, width: number) {
+        super(app, width);
         this.canvas = document.getElementById('canvas2') as HTMLCanvasElement;
+        this.canvas.width = width;
         this.ctx = this.canvas.getContext('2d') as CanvasRenderingContext2D;
+    }
+
+    setWidth(width: number) {
+        console.log("setting width", width);
+        this.width = width;
+        this.canvas.width = width;
+        this.canvas.setAttribute('width', width.toString());
+    }
+
+    set width(width: number) {
+        this.canvas.width = width;
+    }
+    set height(height: number) {
+        this.canvas.height = height;
     }
 
     get width() {
@@ -117,9 +142,25 @@ class LargeGameCanvas extends GameCanvas {
             if (asteroid.y < this.app.viewPort.y - 30) return;
             if (asteroid.y > this.app.viewPort.y + this.app.viewPort.height + 30) return;
 
-            this.drawAsteroid(asteroid, player);
+            this.drawNormalAsteroid(asteroid, player);
         });
+        if (player.lockedAsteroid) {
+            this.drawLockedAsteroid(player.lockedAsteroid, player);
+        }
         this.drawPlayer(player);
+    }
+
+    drawLockedAsteroid(asteroid: Asteroid, player: Player) {
+        this.ctx.strokeStyle = 'red';
+        this.ctx.lineWidth = 10;
+        this.drawAsteroid(asteroid, player);
+        this.ctx.stroke();
+    }
+
+    drawNormalAsteroid(asteroid: Asteroid, player: Player) {
+        this.ctx.strokeStyle = 'white';
+        this.ctx.lineWidth = 5;
+        this.drawAsteroid(asteroid, player);
     }
 
     drawAsteroid(asteroid: Asteroid, player: Player) {
@@ -178,10 +219,14 @@ class LargeGameCanvas extends GameCanvas {
         let length = player.shipLength();
         let halfLength = length / 2;
         let scaledHalfLength = halfLength * this.scaleFactor();
-        this.ctx.rect(0, -2, scaledHalfLength, 4);
-        this.ctx.rect(scaledHalfLength * -1, -3, scaledHalfLength, 6);
+        this.ctx.fillRect(0, -2, scaledHalfLength, 4);
+        this.ctx.fillRect(scaledHalfLength * -1, -3, scaledHalfLength, 6);
+        if (player.accelerating === true) {
+            this.ctx.fillStyle = 'orange';
+            let flameLength = 0.5;
+            this.ctx.fillRect(scaledHalfLength * -1 * (1 + flameLength), -1, scaledHalfLength * (flameLength), 2);
+        }
         this.ctx.resetTransform();
-        this.ctx.fill();
     }
 
     scaleFactor() {
@@ -190,6 +235,12 @@ class LargeGameCanvas extends GameCanvas {
 }
 
 class SmallGameCanvas extends GameCanvas {
+    viewPort = {
+        x: 0,
+        y: 0,
+        width: 10,
+        height: 10
+    };
 
     constructor(app: App) {
         super(app);
@@ -203,23 +254,54 @@ class SmallGameCanvas extends GameCanvas {
             this.drawSprite(asteroid);
         });
         this.ctx.strokeStyle = 'white';
-        this.ctx.strokeRect(app.viewPort.x, app.viewPort.y, app.viewPort.width, app.viewPort.height);
+        // draw the viewport
+        this.ctx.strokeRect(
+            this.gtlx(app.viewPort.x), 
+            this.gtly(app.viewPort.y), 
+            this.scaleFactorX(app.viewPort.width), 
+            this.scaleFactorY(app.viewPort.height)
+        );
         this.drawPlayer(app.sprites[0] as Player);
     }
 
     drawSprite(asteroid: Asteroid) {
         this.ctx.beginPath();
-        this.ctx.arc(asteroid.x, asteroid.y, asteroid.radius, 0, Math.PI * 2);
+        this.ctx.arc(
+            this.gtlx(asteroid.x), 
+            this.gtly(asteroid.y), 
+            this.scaleFactorX(asteroid.radius), 
+            0, 
+            Math.PI * 2
+        );
         this.ctx.fillStyle = asteroid.color;
         this.ctx.fill();
         this.ctx.closePath();
+    }
+
+    scaleFactorX(x: number) {
+        return x * (this.width / this.app.solarSystem.width);
+    }
+
+    scaleFactorY(y: number) {
+        return y * (this.height / this.app.solarSystem.height);
+    }
+
+    gtlx(x: number) {
+        return this.scaleFactorX(x) + this.width / 2;
+    }
+
+    gtly(y: number) {
+        return this.scaleFactorY(y) + this.height / 2;
     }
 
     drawPlayer(player: Player) {
         this.ctx.beginPath();
         this.ctx.fillStyle = 'red';
         let angle = player.direction;
-        this.ctx.translate(player.x, player.y);
+        this.ctx.translate(
+            this.gtlx(player.x), 
+            this.gtly(player.y)
+        );
         //this.ctx.transform(Math.cos(angle), Math.sin(angle), -Math.sin(angle), Math.cos(angle), player.x, player.y);
         this.ctx.rotate(angle);
         let length = player.shipLength();
@@ -295,6 +377,7 @@ class GameLoop {
 
     processInput() {
         let player = this.app.sprites[0] as Player;
+        player.accelerating = false;
         if (this.app.pressedKeys["ArrowLeft"]) {
             player.direction -= player.rotationalAcceleration;
         }
@@ -304,6 +387,7 @@ class GameLoop {
 
         if (this.app.pressedKeys["ArrowUp"]) {
             player.lockedAsteroid = null;
+            player.accelerating = true;
             player.dx += player.acceleration * Math.cos(player.direction);
             player.dy += player.acceleration * Math.sin(player.direction);
         }

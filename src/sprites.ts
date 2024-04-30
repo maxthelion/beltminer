@@ -40,7 +40,7 @@ export class Asteroid extends Sprite {
             Math.floor(Math.random() * 255) + "," +
             Math.floor(Math.random() * 255) + "," +
             Math.floor(Math.random() * 255) + ")";
-        this.radius = Math.random() * 10;
+        this.radius = Math.random() * 4 + 2;
         this.mass = this.radius * 0.0005;
         this.angle = Math.random() * Math.PI * 2;
         this.cx = system.centerX;
@@ -48,10 +48,10 @@ export class Asteroid extends Sprite {
         this.a = Math.random() * (system.maxRadius - system.minRadius) + system.minRadius;
         this.b = Math.random() * (system.maxRadius - system.minRadius) + system.minRadius;
         this.distance = Math.random() * 50 + 50;
-        this.speed = Math.random() * 0.001 + 0.001;
+        this.speed = Math.random() * 0.0001 + 0.0001;
         this.asteroidPoints = AsteroidRenderer.generateAsteroidShape(10, this.radius);
         this.rotation = Math.random() * Math.PI * 2;
-        this.rotationSpeed = Math.random() * 0.01 - 0.005;
+        this.rotationSpeed = Math.random() * 0.001 + 0.0002;
     }
 
     update() {
