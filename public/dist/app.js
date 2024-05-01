@@ -21,7 +21,7 @@ var App = /** @class */ (function () {
         var _this = this;
         var _a;
         this.zoomLevel = 100;
-        this.viewPort = new ViewPort({
+        this.defaultViewPort = new ViewPort({
             x: 0,
             y: 0,
             width: 100,
@@ -38,6 +38,7 @@ var App = /** @class */ (function () {
         this.spriteSheet = spriteSheet;
         var largeHolderWidth = (_a = document.getElementById("largeholder")) === null || _a === void 0 ? void 0 : _a.clientWidth;
         this.solarSystem = new SolarSystem();
+        this.viewPort = this.defaultViewPort;
         this.sprites = [];
         this.player = new Player();
         this.sprites.push(this.player);
@@ -89,8 +90,16 @@ var App = /** @class */ (function () {
         this.player.lockOn(asteroid);
         this.newViewPortForEntity(asteroid);
     };
+    App.prototype.detachBody = function () {
+        this.player.lockedAsteroid = null;
+        this.actionsBar.hide();
+        this.setDefaultViewPort();
+    };
     App.prototype.init = function () {
         this.gameLoop.start();
+    };
+    App.prototype.setDefaultViewPort = function () {
+        this.newViewPort = this.defaultViewPort;
     };
     App.prototype.newViewPortForEntity = function (entity) {
         this.newViewPort = new ViewPort({

@@ -28,13 +28,14 @@ export default class App {
     largeGameCanvas: LargeGameCanvas;
     zoomLevel = 100;
     spriteSheet: HTMLImageElement;
-    viewPort: ViewPort = new ViewPort({
+    defaultViewPort: ViewPort = new ViewPort({
         x: 0,
         y: 0,
         width: 100,
         height: 100
     });
     newViewPort: ViewPort | undefined = undefined;
+    viewPort: ViewPort;
     pressedKeys = {
         "ArrowLeft": false,
         "ArrowRight": false,
@@ -51,7 +52,7 @@ export default class App {
         this.spriteSheet = spriteSheet;
         let largeHolderWidth = document.getElementById("largeholder")?.clientWidth;
         this.solarSystem = new SolarSystem();
-
+        this.viewPort = this.defaultViewPort;
         this.sprites = [];
 
         this.player = new Player();
@@ -108,10 +109,20 @@ export default class App {
         this.newViewPortForEntity(asteroid)
     }
 
+    detachBody() {
+        this.player.lockedAsteroid = null;
+        this.actionsBar.hide();
+        this.setDefaultViewPort();
+    }
+
     init() {
         this.gameLoop.start();    
     }
 
+    setDefaultViewPort() {
+        this.newViewPort = this.defaultViewPort
+    }
+    
     newViewPortForEntity(entity: Asteroid | Planetoid ) {
         this.newViewPort = new ViewPort({
             x: entity.x - (entity.radius * 2),

@@ -46,6 +46,9 @@ var Player = /** @class */ (function (_super) {
     Player.prototype.isLocked = function () {
         return this.lockedAsteroid !== null;
     };
+    Player.prototype.isThrusting = function () {
+        return this.accelerating;
+    };
     return Player;
 }(Sprite));
 export default Player;

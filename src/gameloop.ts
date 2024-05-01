@@ -9,6 +9,7 @@ export class GameLoop {
     }
     update() {
         this.processInput();
+
         if (this.app.newViewPort !== undefined) {
             let deltaWidth = this.app.newViewPort.width - this.app.viewPort.width;
             let deltaHeight = this.app.newViewPort.height - this.app.viewPort.height;
@@ -50,18 +51,13 @@ export class GameLoop {
                     if (distance < 10 &&
                         Math.abs(player.dx - asteroid.dx) < 10 &&
                         Math.abs(player.dy - asteroid.dy) < 10) {
-                        if (distance < 0.5) {
+                        if (distance < 0.02 && !player.isThrusting()) {
                             this.app.lockOn(asteroid);
                         }
                         let inverseDistance = 1 / distance * 0.1;
                         player.x += (asteroid.x - player.x) * inverseDistance;
                         player.y += (asteroid.y - player.y) * inverseDistance;
-                    } else {
-                        let angle = Math.atan2(dy, dx);
-                        let massInfluence = asteroid.mass * influenceBase * Math.log(distance);
-                        player.dx += Math.cos(angle) * massInfluence;
-                        player.dy += Math.sin(angle) * massInfluence;
-                    }
+                    } 
                 }
             });
 
@@ -85,7 +81,9 @@ export class GameLoop {
         }
 
         if (this.app.pressedKeys["ArrowUp"]) {
-            player.lockedAsteroid = null;
+            if (player.lockedAsteroid !== null) {
+                this.app.detachBody();
+            }
             player.accelerating = true;
             player.dx += player.acceleration * Math.cos(player.direction);
             player.dy += player.acceleration * Math.sin(player.direction);

@@ -144,13 +144,14 @@ export class LargeGameCanvas extends GameCanvas {
 
         this.ctx.fillStyle = player.color;
         let angle = player.direction;
+        let angle90 = angle + 0.25 * Math.PI;
         this.ctx.translate(this.width / 2, this.height / 2);
-        this.ctx.rotate(angle);
+        this.ctx.rotate(angle90);
         // draw sprite from sprite sheet
-        // this.ctx.drawImage(this.spriteSheet,
-        //     30, 30, 100, 100,
-        //     -16, -16, 32, 32
-        // );
+        this.ctx.drawImage(this.spriteSheet,
+            628, 30, 150, 300,
+            -35, -100, 70, 200
+        );
 
 
         let length = player.shipLength();

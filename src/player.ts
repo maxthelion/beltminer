@@ -42,6 +42,10 @@ export default class Player extends Sprite {
     isLocked() {
         return this.lockedAsteroid !== null;
     }
+
+    isThrusting() {
+        return this.accelerating;
+    }
 }
 
 export class Ship {
