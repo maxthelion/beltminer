@@ -6,10 +6,33 @@ body {
     width: 80%;
     margin: 0 auto;
 }
+#largeholder {
+    position: relative;
+}
 #holder {
     display: grid;
     grid-template-columns: 1fr 300px;
 }
 #canvas2 {
     width: 100%;
+}
+
+#infopane {
+    color: white
+}
+#actions {
+    display: grid;
+    position: absolute;
+    bottom: 10px;
+    width: 100%;
+    grid-template-columns: 1fr 50% 1fr;
+    background-color: deeppink;
+    height: 50px;
+}
+#modal {
+    position: absolute;
+    width: 50%;
+    height: 50%;
+    left: 25%;
+    top: 25%;
 }

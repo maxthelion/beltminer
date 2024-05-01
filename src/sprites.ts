@@ -7,7 +7,10 @@ export class Sprite {
     y: number;
     dx: number;
     dy: number;
+    uuid: string;
+
     constructor() {
+        this.uuid = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
         this.x = 50;
         this.y = 50;
         this.dx = 0;
@@ -61,4 +64,17 @@ export class Asteroid extends Sprite {
         this.angle += this.speed;
     }
 
+}
+
+export class Planetoid extends Asteroid {
+    radius: number;
+    color = 'cyan';
+    mass = 1;
+    name: string;
+    constructor(system: SolarSystem, name: string) {
+        super(system);
+        this.radius = 30;
+        this.mass = this.radius * 0.0005;
+        this.name = name;
+    }
 }

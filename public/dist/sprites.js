@@ -16,6 +16,7 @@ var __extends = (this && this.__extends) || (function () {
 import AsteroidRenderer from './asteroidrenderer.js';
 var Sprite = /** @class */ (function () {
     function Sprite() {
+        this.uuid = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
         this.x = 50;
         this.y = 50;
         this.dx = 0;
@@ -64,3 +65,17 @@ var Asteroid = /** @class */ (function (_super) {
     return Asteroid;
 }(Sprite));
 export { Asteroid };
+var Planetoid = /** @class */ (function (_super) {
+    __extends(Planetoid, _super);
+    function Planetoid(system, name) {
+        var _this = _super.call(this, system) || this;
+        _this.color = 'cyan';
+        _this.mass = 1;
+        _this.radius = 30;
+        _this.mass = _this.radius * 0.0005;
+        _this.name = name;
+        return _this;
+    }
+    return Planetoid;
+}(Asteroid));
+export { Planetoid };

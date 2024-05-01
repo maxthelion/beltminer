@@ -1,17 +1,23 @@
 import {Sprite, Asteroid} from './sprites.js';
 
+type InventorySlot = {
+    itemType: string,
+    quantity: number,
+}
 export default class Player extends Sprite {
     direction: number;
-    acceleration = 0.0005;
+    acceleration = 0.005;
     rotationalAcceleration = 0.05;
     color = 'grey';
     lockedAsteroid: Asteroid | null;
     accelerating = false;
+    inventory: InventorySlot[];
 
     constructor() {
         super();
         this.direction = Math.random() * Math.PI * 2;
         this.lockedAsteroid = null;
+        this.inventory = [];
     }
 
     update() {
@@ -27,5 +33,39 @@ export default class Player extends Sprite {
         return 3;
     }
 
+    lockOn(asteroid: Asteroid) {
+        this.lockedAsteroid = asteroid;
+        this.dx = 0;
+        this.dy = 0;
+    }
+
+    isLocked() {
+        return this.lockedAsteroid !== null;
+    }
+}
+
+export class Ship {
+    maxCargo: number = 10;
+    cargoSlots: (CargoSlot | null)[];
+
+    constructor() {
+        this.cargoSlots = new Array(this.maxCargo);
+        for (let i = 0; i < this.maxCargo; i++) {
+            
+        }
+    }
 
 }
+
+type CargoSlot = {
+    cargoType: string;
+    cargoAmount: number; 
+}
+
+let cargoTypes = [
+    'ironore',
+    'goldore',
+    'water',
+    'ice',
+    'food',
+]
