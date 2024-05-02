@@ -1,4 +1,5 @@
-import {Sprite, Asteroid} from './sprites.js';
+import {Sprite} from './sprites.js';
+import { Asteroid } from './asteroid.js';
 
 type InventorySlot = {
     itemType: string,
@@ -12,9 +13,19 @@ export default class Player extends Sprite {
     lockedAsteroid: Asteroid | null;
     accelerating = false;
     inventory: InventorySlot[];
+    distanceFromCenter: number;
+    angle: number;
+    cx: number;
+    cy: number;
 
     constructor() {
         super();
+        this.x = 200;
+        this.y = 50;
+        this.angle = 0;
+        this.distanceFromCenter = 200;
+        this.cx = 0;
+        this.cy = 0;
         this.direction = Math.random() * Math.PI * 2;
         this.lockedAsteroid = null;
         this.inventory = [];
@@ -22,8 +33,11 @@ export default class Player extends Sprite {
 
     update() {
         // if near an asteroid, lock to its speed and direction
-        this.x += this.dx;
-        this.y += this.dy;
+        this.angle += this.dy;
+        this.distanceFromCenter =  200 //this.dx;
+        let radius = 200;
+        this.x = radius * Math.cos(this.angle) + this.cx;
+        this.y = radius * Math.sin(this.angle) + this.cy;
         if (this.lockedAsteroid !== null) {
             this.direction += this.lockedAsteroid.rotationSpeed;
         }

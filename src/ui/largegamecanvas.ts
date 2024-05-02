@@ -1,7 +1,26 @@
-import { Asteroid, Planetoid } from '../sprites.js';
+import { Planetoid } from '../planetoid.js';
+import { Asteroid } from '../asteroid.js';
 import Player from '../player.js';
 import App from '../app.js';
 import { GameCanvas } from './gamecanvas.js';
+
+class FakeAsteroid {
+    x: number;
+    y: number;
+    radius: number;
+    color: string;
+    rotation: number;
+    asteroidPoints: { x: number; y: number; }[];
+    constructor(asteroid: Asteroid) {
+        this.x =  asteroid.distanceFromCenter;
+        this.y = (asteroid.angle % (Math.PI * 2)) * 100;
+        this.radius = asteroid.radius;
+        this.color = asteroid.color;
+        this.rotation = asteroid.rotation;
+        this.asteroidPoints = asteroid.asteroidPoints;
+    }
+
+}
 
 export class LargeGameCanvas extends GameCanvas {
     spriteSheet: HTMLImageElement;
@@ -14,7 +33,6 @@ export class LargeGameCanvas extends GameCanvas {
     }
 
     setWidth(width: number) {
-        console.log("setting width", width);
         this.width = width;
         this.canvas.width = width;
         this.canvas.setAttribute('width', width.toString());
@@ -35,7 +53,9 @@ export class LargeGameCanvas extends GameCanvas {
     }
 
     draw(app: App) {
-        this.ctx.clearRect(0, 0, this.width, this.height);
+        // this.ctx.clearRect(0, 0, this.width, this.height);
+        this.ctx.fillStyle = "rgba(0, 0, 0, 0.01)"
+        this.ctx.fillRect(0, 0, this.width, this.height);
         this.centerOnPlayer(app.sprites[0] as Player);
     }
 
@@ -44,7 +64,9 @@ export class LargeGameCanvas extends GameCanvas {
         // this.ctx.scale(1 + app.zoomLevel, 1 + app.zoomLevel);
         // this.ctx.translate(-player.x, -player.y);
         this.ctx.beginPath();
-        this.app.asteroids.forEach(asteroid => {
+        this.app.asteroids.forEach(originalAsteroid => {
+            let asteroid = new FakeAsteroid(originalAsteroid);
+
             if (asteroid.x < this.app.viewPort.x - 30) return;
             if (asteroid.x > this.app.viewPort.x + this.app.viewPort.width + 30) return;
             if (asteroid.y < this.app.viewPort.y - 30) return;
@@ -80,22 +102,22 @@ export class LargeGameCanvas extends GameCanvas {
         this.ctx.closePath();
     }
 
-    drawLockedAsteroid(asteroid: Asteroid, player: Player) {
+    drawLockedAsteroid(asteroid: FakeAsteroid, player: Player) {
         this.ctx.strokeStyle = 'red';
         this.ctx.lineWidth = 10;
         this.drawAsteroid(asteroid, player);
         this.ctx.stroke();
     }
 
-    drawNormalAsteroid(asteroid: Asteroid, player: Player) {
+    drawNormalAsteroid(asteroid: FakeAsteroid, player: Player) {
         this.ctx.strokeStyle = 'white';
         this.ctx.lineWidth = 5;
         this.drawAsteroid(asteroid, player);
     }
 
-    drawAsteroid(asteroid: Asteroid, player: Player) {
+    drawAsteroid(asteroid: FakeAsteroid, player: Player) {
         this.ctx.beginPath();
-        let normalizedAsteroid = this.normalizedSpritePosition(asteroid, player);
+        let normalizedAsteroid = this.normalizedSpritePosition(asteroid as Asteroid, player);
         this.ctx.fillStyle = asteroid.color;
         // console.log(asteroid.color)
         this.ctx.translate(normalizedAsteroid.x, normalizedAsteroid.y);
@@ -106,7 +128,7 @@ export class LargeGameCanvas extends GameCanvas {
         this.ctx.fill();
     }
 
-    drawNormalizedAsteroid(normalized: { x: number; y: number; }, asteroid: Asteroid) {
+    drawNormalizedAsteroid(normalized: { x: number; y: number; }, asteroid: FakeAsteroid) {
         this.ctx.beginPath();
         let points = asteroid.asteroidPoints.slice();
         let na = {
@@ -144,14 +166,13 @@ export class LargeGameCanvas extends GameCanvas {
 
         this.ctx.fillStyle = player.color;
         let angle = player.direction;
-        let angle90 = angle + 0.25 * Math.PI;
         this.ctx.translate(this.width / 2, this.height / 2);
-        this.ctx.rotate(angle90);
+        this.ctx.rotate(angle);
         // draw sprite from sprite sheet
-        this.ctx.drawImage(this.spriteSheet,
-            628, 30, 150, 300,
-            -35, -100, 70, 200
-        );
+        // this.ctx.drawImage(this.spriteSheet,
+        //     628, 30, 150, 300,
+        //     -35, -100, 70, 200
+        // );
 
 
         let length = player.shipLength();

@@ -1,4 +1,5 @@
-import { Asteroid, Planetoid } from './sprites.js';
+import { Planetoid } from './planetoid.js';
+import { Asteroid } from './asteroid.js';
 import Player from './player.js';
 import { GameLoop } from './gameloop.js';
 import InfoPane from './ui/infopane.js';
@@ -114,7 +115,7 @@ var App = /** @class */ (function () {
 export default App;
 var SolarSystem = /** @class */ (function () {
     function SolarSystem() {
-        this.asteroidNum = 200;
+        this.asteroidNum = 10;
         this.centerX = 0;
         this.centerY = 0;
         this.minRadius = 150;

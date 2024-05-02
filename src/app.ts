@@ -1,4 +1,6 @@
-import { Sprite, Asteroid, Planetoid } from './sprites.js';
+import { Sprite } from './sprites.js';
+import { Planetoid } from './planetoid.js';
+import { Asteroid } from './asteroid.js';
 import Player from './player.js';
 import { GameLoop } from './gameloop.js';
 import InfoPane from './ui/infopane.js';
@@ -122,7 +124,7 @@ export default class App {
     setDefaultViewPort() {
         this.newViewPort = this.defaultViewPort
     }
-    
+
     newViewPortForEntity(entity: Asteroid | Planetoid ) {
         this.newViewPort = new ViewPort({
             x: entity.x - (entity.radius * 2),
@@ -136,7 +138,7 @@ export default class App {
 
 
 export class SolarSystem {
-    asteroidNum = 200;
+    asteroidNum = 10;
     centerX = 0;
     centerY = 0;
     minRadius = 150;

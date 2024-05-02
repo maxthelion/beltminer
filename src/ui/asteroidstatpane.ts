@@ -1,5 +1,5 @@
 import Renderable from "./renderable.js";
-import { Asteroid } from "../sprites.js";
+import { Asteroid } from '../asteroid.js';
 import App from "../app.js";
 
 export default class AsteroidStatPane extends Renderable {

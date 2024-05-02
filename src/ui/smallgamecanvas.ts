@@ -1,4 +1,5 @@
-import { Asteroid, Planetoid } from '../sprites.js';
+import { Planetoid } from '../planetoid.js';
+import { Asteroid } from '../asteroid.js';
 import Player from '../player.js';
 import { GameCanvas } from './gamecanvas.js';
 import App from '../app.js';
@@ -26,16 +27,57 @@ export class SmallGameCanvas extends GameCanvas {
             this.drawPlanetoid(planetoid);
         });
         this.ctx.strokeStyle = 'white';
-        // draw the viewport
-        this.ctx.strokeRect(
-            this.gtlx(app.viewPort.x),
-            this.gtly(app.viewPort.y),
-            this.scaleFactorX(app.viewPort.width),
-            this.scaleFactorY(app.viewPort.height)
-        );
+        this.drawViewPort();
         this.drawPlayer(app.sprites[0] as Player);
     }
 
+    drawViewPort() {
+        // draw the viewport
+        this.ctx.strokeStyle = 'white';
+        this.ctx.lineWidth = 1;
+        this.ctx.beginPath();
+        let anglewidth = Math.PI / 180 * 45;
+        let firstAngle = this.app.player.angle - ( anglewidth / 2);
+        let lastAngle = this.app.player.angle + ( anglewidth / 2);
+
+        let outerRadius = this.scaleFactorX( this.app.player.distanceFromCenter + 20) ;
+        let innerRadius = this.scaleFactorX( this.app.player.distanceFromCenter - 20 );
+        // draw a slice of the circle starting converting x to radius and y to angle
+        this.ctx.arc(
+            this.width / 2, 
+            this.height / 2, 
+            innerRadius, 
+            firstAngle,
+            lastAngle
+        );
+        // move to start of outer arc
+        
+        this.ctx.lineTo(
+            this.width / 2 + outerRadius * Math.cos(lastAngle),
+            this.height / 2 + outerRadius * Math.sin(lastAngle)
+        );
+        // draw outer arc
+        this.ctx.arc(
+            this.width / 2, 
+            this.height / 2, 
+            outerRadius, 
+            lastAngle,
+            firstAngle,
+            true
+        );
+        this.ctx.lineTo(
+            this.width / 2 + innerRadius * Math.cos(firstAngle),
+            this.height / 2 + innerRadius * Math.sin(firstAngle)
+        );
+        this.ctx.stroke();
+        
+        // this.ctx.strokeRect(
+        //     this.gtlx(app.viewPort.x),
+        //     this.gtly(app.viewPort.y),
+        //     this.scaleFactorX(app.viewPort.width),
+        //     this.scaleFactorY(app.viewPort.height)
+        // );
+    }
     drawPlanetoid(planetoid: Planetoid) {
         this.ctx.beginPath();
         this.ctx.arc(
