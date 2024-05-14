@@ -10,19 +10,19 @@ export class GameLoop {
     update() {
         this.processInput();
 
-        // if (this.app.newViewPort !== undefined) {
-        //     let deltaWidth = this.app.newViewPort.width - this.app.viewPort.width;
-        //     let deltaHeight = this.app.newViewPort.height - this.app.viewPort.height;
+        if (this.app.newViewPort !== undefined) {
+            let deltaWidth = this.app.newViewPort.radialWidth - this.app.viewPort.radialWidth;
+            let deltaHeight = this.app.newViewPort.arcLength - this.app.viewPort.arcLength;
 
-        //     if (Math.abs(deltaWidth) > 0.1 && Math.abs(deltaHeight) > 0.1) {
-        //         this.app.viewPort.width += deltaWidth * 0.1;
-        //         this.app.viewPort.height += deltaHeight * 0.1;
-        //     } else {
-        //         this.app.viewPort.width = this.app.newViewPort.width;
-        //         this.app.viewPort.height = this.app.newViewPort.height;
-        //         this.app.newViewPort = undefined;
-        //     }
-        // }
+            if (Math.abs(deltaWidth) > 0.1 && Math.abs(deltaHeight) > 0.1) {
+                this.app.viewPort.radialWidth += deltaWidth * 0.1;
+                this.app.viewPort.arcLength += deltaHeight * 0.1;
+            } else {
+                this.app.viewPort.radialWidth = this.app.newViewPort.radialWidth;
+                this.app.viewPort.arcLength = this.app.newViewPort.arcLength;
+                this.app.newViewPort = undefined;
+            }
+        }
         this.app.asteroids.forEach(sprite => {
             sprite.update();
         });
@@ -30,40 +30,38 @@ export class GameLoop {
             sprite.update();
         });
         
-        // let proximityAsteroids = this.app.asteroids.filter(asteroid => {
-        //     return asteroid.x > this.app.viewPort.x - influenceDistance &&
-        //         asteroid.x < this.app.viewPort.x + this.app.viewPort.width + influenceDistance &&
-        //         asteroid.y > this.app.viewPort.y - influenceDistance &&
-        //         asteroid.y < this.app.viewPort.y + this.app.viewPort.height + influenceDistance;
-        // });
+        let proximityAsteroids = this.app.proximateAsteroids();
+        // console.log(proximityAsteroids.length)
         let player = this.app.sprites[0] as Player;
         if (player.lockedAsteroid) {
             player.x = player.lockedAsteroid.x;
             player.y = player.lockedAsteroid.y;
         } else {
-            // proximityAsteroids.forEach(asteroid => {
-            //     let dx = asteroid.x - player.x;
-            //     let dy = asteroid.y - player.y;
-            //     let distance = Math.sqrt(dx * dx + dy * dy);
-            //     if (distance < influenceDistance) {
-            //         // if similar direction, match speed
-            //         if (distance < 10 &&
-            //             Math.abs(player.dx - asteroid.dx) < 10 &&
-            //             Math.abs(player.dy - asteroid.dy) < 10) {
-            //             if (distance < 0.02 && !player.isThrusting()) {
-            //                 this.app.lockOn(asteroid);
-            //             }
-            //             let inverseDistance = 1 / distance * 0.1;
-            //             player.x += (asteroid.x - player.x) * inverseDistance;
-            //             player.y += (asteroid.y - player.y) * inverseDistance;
-            //         } 
-            //     }
-            // });
+            let influenceDistance = 100;
+            proximityAsteroids.forEach(asteroid => {
+                let dx = asteroid.x - player.x;
+                let dy = asteroid.y - player.y;
+                let distance = Math.sqrt(dx * dx + dy * dy);
+                if (distance < influenceDistance) {
+                    // if similar direction, match speed
+                    if (distance < 10 &&
+                        Math.abs(player.dx - asteroid.dx) < 10 &&
+                        Math.abs(player.dy - asteroid.dy) < 10) {
+                        if (distance < 1 && !player.isThrusting()) {
+                            this.app.lockOn(asteroid);
+                            console.log("influence distance", distance)
+
+                        }
+                        let inverseDistance = 1 / distance * 0.1;
+                        player.x += (asteroid.x - player.x) * inverseDistance;
+                        player.y += (asteroid.y - player.y) * inverseDistance;
+                    } 
+                }
+            });
 
         }
         this.app.player.update();
-        this.app.viewPort.x = this.app.sprites[0].x - (this.app.viewPort.width / 2);
-        this.app.viewPort.y = this.app.sprites[0].y - (this.app.viewPort.height / 2);
+        this.app.viewPort.update(player);
         this.app.largeGameCanvas.draw(this.app);
         this.app.smallGameCanvas.draw(this.app);
         this.app.infoPane.render();
@@ -83,9 +81,7 @@ export class GameLoop {
             if (player.lockedAsteroid !== null) {
                 this.app.detachBody();
             }
-            player.accelerating = true;
-            player.dx += player.acceleration * Math.cos(player.direction);
-            player.dy += player.acceleration * Math.sin(player.direction);
+            player.accelerate();
         }
         if (this.app.pressedKeys["ArrowDown"]) {
             player.dx = 0;

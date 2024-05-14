@@ -5,6 +5,8 @@ var Sprite = /** @class */ (function () {
         this.y = 50;
         this.dx = 0;
         this.dy = 0;
+        this.angle = 0;
+        this.distanceFromCenter = 0;
     }
     Sprite.prototype.update = function () {
         this.x += this.dx;

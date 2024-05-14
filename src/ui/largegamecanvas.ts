@@ -53,9 +53,9 @@ export class LargeGameCanvas extends GameCanvas {
     }
 
     draw(app: App) {
-        // this.ctx.clearRect(0, 0, this.width, this.height);
-        this.ctx.fillStyle = "rgba(0, 0, 0, 0.01)"
-        this.ctx.fillRect(0, 0, this.width, this.height);
+        this.ctx.clearRect(0, 0, this.width, this.height);
+        // this.ctx.fillStyle = "rgba(0, 0, 0, 0.01)"
+        //this.ctx.fillRect(0, 0, this.width, this.height);
         this.centerOnPlayer(app.sprites[0] as Player);
     }
 
@@ -64,35 +64,25 @@ export class LargeGameCanvas extends GameCanvas {
         // this.ctx.scale(1 + app.zoomLevel, 1 + app.zoomLevel);
         // this.ctx.translate(-player.x, -player.y);
         this.ctx.beginPath();
-        this.app.asteroids.forEach(originalAsteroid => {
-            let asteroid = new FakeAsteroid(originalAsteroid);
-
-            if (asteroid.x < this.app.viewPort.x - 30) return;
-            if (asteroid.x > this.app.viewPort.x + this.app.viewPort.width + 30) return;
-            if (asteroid.y < this.app.viewPort.y - 30) return;
-            if (asteroid.y > this.app.viewPort.y + this.app.viewPort.height + 30) return;
-
+        this.app.asteroids.forEach(asteroid => {
+            if (this.app.viewPort.containsEntity(asteroid) === false) return;
             this.drawNormalAsteroid(asteroid, player);
         });
-        this.app.planetoids.forEach(planetoid => {
-            if (planetoid.x < this.app.viewPort.x - 30) return;
-            if (planetoid.x > this.app.viewPort.x + this.app.viewPort.width + 30) return;
-            if (planetoid.y < this.app.viewPort.y - 30) return;
-            if (planetoid.y > this.app.viewPort.y + this.app.viewPort.height + 30) return;
-
-            this.drawPlanetoid(planetoid, player);
-        });
-        if (player.lockedAsteroid) {
-            this.drawLockedAsteroid(player.lockedAsteroid, player);
-        }
+        // this.app.planetoids.forEach(planetoid => {
+        //     if (this.app.viewPort.containsEntity(planetoid) === false) return;
+        //     this.drawPlanetoid(planetoid, player);
+        // });
+        // if (player.lockedAsteroid) {
+        //     this.drawLockedAsteroid(player.lockedAsteroid, player);
+        // }
         this.drawPlayer(player);
     }
 
     drawPlanetoid(planetoid: Planetoid, player: Player) {
         this.ctx.beginPath();
         this.ctx.arc(
-            this.gtlx(planetoid.x),
-            this.gtly(planetoid.y),
+            this.app.viewPort.relativeX(planetoid) * this.scaleFactor(),
+            this.app.viewPort.relativeY(planetoid) * this.scaleFactor(),
             this.scaleFactor() * planetoid.radius,
             0,
             Math.PI * 2
@@ -102,30 +92,39 @@ export class LargeGameCanvas extends GameCanvas {
         this.ctx.closePath();
     }
 
-    drawLockedAsteroid(asteroid: FakeAsteroid, player: Player) {
+    drawLockedAsteroid(asteroid: Asteroid, player: Player) {
         this.ctx.strokeStyle = 'red';
         this.ctx.lineWidth = 10;
         this.drawAsteroid(asteroid, player);
         this.ctx.stroke();
     }
 
-    drawNormalAsteroid(asteroid: FakeAsteroid, player: Player) {
+    drawNormalAsteroid(asteroid: Asteroid, player: Player) {
         this.ctx.strokeStyle = 'white';
         this.ctx.lineWidth = 5;
         this.drawAsteroid(asteroid, player);
     }
 
-    drawAsteroid(asteroid: FakeAsteroid, player: Player) {
+    drawAsteroid(asteroid: Asteroid, player: Player) {
         this.ctx.beginPath();
-        let normalizedAsteroid = this.normalizedSpritePosition(asteroid as Asteroid, player);
         this.ctx.fillStyle = asteroid.color;
         // console.log(asteroid.color)
-        this.ctx.translate(normalizedAsteroid.x, normalizedAsteroid.y);
+        let relativeX = this.app.viewPort.relativeX(asteroid) / this.app.viewPort.radialWidth;
+        let relativeY = this.app.viewPort.relativeY(asteroid) / this.app.viewPort.arcLength;
+        
+        let x = this.width - (this.width/ 2 + (relativeX * this.width)); 
+        let y = this.height - (this.height / 2 + (relativeY * this.height)); 
+        this.ctx.translate(x, y);
         this.ctx.rotate(asteroid.rotation);
-        this.drawNormalizedAsteroid(normalizedAsteroid, asteroid);
+        this.drawCircle(asteroid);
+        // this.drawNormalizedAsteroid(normalizedAsteroid, asteroid);
         // this.ctx.arc(normalizedAsteroid.x, normalizedAsteroid.y, asteroid.radius * this.scaleFactor(), 0, Math.PI * 2);
         this.ctx.resetTransform();
         this.ctx.fill();
+    }
+
+    drawCircle(asteroid: Asteroid) {
+        this.ctx.arc(0, 0, asteroid.radius * this.scaleFactor(), 0, Math.PI * 2);
     }
 
     drawNormalizedAsteroid(normalized: { x: number; y: number; }, asteroid: FakeAsteroid) {
@@ -152,14 +151,16 @@ export class LargeGameCanvas extends GameCanvas {
         this.ctx.fill();
     }
 
-    normalizedSpritePosition(asteroid: Asteroid, player: Player) {
-        let xScale = this.width / this.app.viewPort.width;
-        let yScale = this.height / this.app.viewPort.height;
-        return {
-            x: ((asteroid.x) - (this.app.viewPort.x)) * xScale,
-            y: ((asteroid.y) - (this.app.viewPort.y)) * yScale
-        };
-    }
+    // normalizedSpritePosition(asteroid: Asteroid, player: Player) {
+    //     let xScale = this.width / this.app.viewPort.width;
+    //     let yScale = this.height / this.app.viewPort.height;
+    //     let x = asteroid.distanceFromCenter - player.distanceFromCenter;
+    //     let y = asteroid.angle - player.angle;
+    //     return {
+    //         x: x,
+    //         y: y
+    //     };
+    // }
 
     drawPlayer(player: Player) {
         this.ctx.beginPath();
@@ -189,7 +190,7 @@ export class LargeGameCanvas extends GameCanvas {
     }
 
     scaleFactor() {
-        return this.width / this.app.viewPort.width;
+        return this.width / this.app.viewPort.radialWidth;
     }
 
     scaleFactorX(x: number) {

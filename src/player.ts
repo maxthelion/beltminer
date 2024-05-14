@@ -13,7 +13,6 @@ export default class Player extends Sprite {
     lockedAsteroid: Asteroid | null;
     accelerating = false;
     inventory: InventorySlot[];
-    distanceFromCenter: number;
     angle: number;
     cx: number;
     cy: number;
@@ -32,14 +31,20 @@ export default class Player extends Sprite {
     }
 
     update() {
-        // if near an asteroid, lock to its speed and direction
-        this.angle += this.dy;
-        this.distanceFromCenter =  200 //this.dx;
-        let radius = 200;
-        this.x = radius * Math.cos(this.angle) + this.cx;
-        this.y = radius * Math.sin(this.angle) + this.cy;
         if (this.lockedAsteroid !== null) {
             this.direction += this.lockedAsteroid.rotationSpeed;
+            this.angle = this.lockedAsteroid.angle;
+            this.distanceFromCenter = this.lockedAsteroid.distanceFromCenter;
+        } else { 
+                
+            // if near an asteroid, lock to its speed and direction
+            this.angle -= this.dy / 1000;
+            this.angle %= Math.PI * 2;
+
+            this.distanceFromCenter -= (this.dx);
+            //let radius = 200;
+            this.x = this.distanceFromCenter * Math.cos(this.angle);
+            this.y = this.distanceFromCenter * Math.sin(this.angle);
         }
     }
 
@@ -55,6 +60,12 @@ export default class Player extends Sprite {
 
     isLocked() {
         return this.lockedAsteroid !== null;
+    }
+
+    accelerate() {
+        this.accelerating = true;
+        this.dx += this.acceleration * Math.cos(this.direction);
+        this.dy += this.acceleration * Math.sin(this.direction);
     }
 
     isThrusting() {

@@ -7,6 +7,7 @@ import { LargeGameCanvas } from './ui/largegamecanvas.js';
 import { SmallGameCanvas } from './ui/smallgamecanvas.js';
 import ActionsBar from './ui/actioinsbar.js';
 import { InventoryModalPane } from './ui/modalpane.js';
+import { RadialViewPort } from './radialviewport.js';
 var ViewPort = /** @class */ (function () {
     function ViewPort(_a) {
         var x = _a.x, y = _a.y, width = _a.width, height = _a.height;
@@ -22,11 +23,11 @@ var App = /** @class */ (function () {
         var _this = this;
         var _a;
         this.zoomLevel = 100;
-        this.defaultViewPort = new ViewPort({
-            x: 0,
-            y: 0,
-            width: 100,
-            height: 100
+        this.defaultViewPort = new RadialViewPort({
+            minRadius: 0,
+            radialWidth: 100,
+            arcLength: 0.05 * Math.PI * 2,
+            minArc: 0,
         });
         this.newViewPort = undefined;
         this.pressedKeys = {
@@ -99,15 +100,30 @@ var App = /** @class */ (function () {
     App.prototype.init = function () {
         this.gameLoop.start();
     };
+    App.prototype.proximateAsteroids = function () {
+        var _this = this;
+        return this.asteroids.filter(function (asteroid) {
+            return _this.areAnglesClose(asteroid.angle, _this.player.angle, 0.1 * Math.PI);
+        });
+    };
+    App.prototype.areAnglesClose = function (theta1, theta2, thresholdAngle) {
+        // Calculate the absolute difference between the angles
+        var angleDifference = Math.abs(theta1 - theta2);
+        // Normalize the difference to be within [0, π]
+        angleDifference = Math.min(angleDifference, 2 * Math.PI - angleDifference);
+        // Compare the angular difference to the threshold angle
+        return angleDifference <= thresholdAngle;
+    };
     App.prototype.setDefaultViewPort = function () {
         this.newViewPort = this.defaultViewPort;
     };
     App.prototype.newViewPortForEntity = function (entity) {
-        this.newViewPort = new ViewPort({
-            x: entity.x - (entity.radius * 2),
-            y: entity.y - (entity.radius * 2),
-            width: entity.radius * 4,
-            height: entity.radius * 4
+        console.log("new view port for entity", entity);
+        this.newViewPort = new RadialViewPort({
+            minArc: entity.angle - (entity.radius * 2 * Math.PI),
+            minRadius: entity.distanceFromCenter - (entity.radius * 2),
+            arcLength: 0.05 * Math.PI * 2,
+            radialWidth: entity.radius * 4
         });
     };
     return App;
@@ -115,7 +131,7 @@ var App = /** @class */ (function () {
 export default App;
 var SolarSystem = /** @class */ (function () {
     function SolarSystem() {
-        this.asteroidNum = 10;
+        this.asteroidNum = 100;
         this.centerX = 0;
         this.centerY = 0;
         this.minRadius = 150;

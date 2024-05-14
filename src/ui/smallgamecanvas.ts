@@ -20,32 +20,35 @@ export class SmallGameCanvas extends GameCanvas {
 
     draw(app: App) {
         this.ctx.clearRect(0, 0, this.width, this.height);
+        
         app.asteroids.forEach(asteroid => {
             this.drawSprite(asteroid);
         });
         app.planetoids.forEach(planetoid => {
             this.drawPlanetoid(planetoid);
         });
-        this.ctx.strokeStyle = 'white';
         this.drawViewPort();
         this.drawPlayer(app.sprites[0] as Player);
+        
     }
 
     drawViewPort() {
         // draw the viewport
+        this.ctx.translate(this.width / 2, this.height / 2);
+
+        this.ctx.rotate(-this.app.player.angle + Math.PI);
         this.ctx.strokeStyle = 'white';
         this.ctx.lineWidth = 1;
         this.ctx.beginPath();
-        let anglewidth = Math.PI / 180 * 45;
-        let firstAngle = this.app.player.angle - ( anglewidth / 2);
-        let lastAngle = this.app.player.angle + ( anglewidth / 2);
+        let firstAngle = this.app.viewPort.getMinArc();
+        let lastAngle = this.app.viewPort.getMaxArc();
 
-        let outerRadius = this.scaleFactorX( this.app.player.distanceFromCenter + 20) ;
-        let innerRadius = this.scaleFactorX( this.app.player.distanceFromCenter - 20 );
+        let outerRadius = this.scaleFactorX( this.app.viewPort.getMaxRadius()) ;
+        let innerRadius = this.scaleFactorX( this.app.viewPort.getMinRadius()) ;
         // draw a slice of the circle starting converting x to radius and y to angle
         this.ctx.arc(
-            this.width / 2, 
-            this.height / 2, 
+            0, 
+            0, 
             innerRadius, 
             firstAngle,
             lastAngle
@@ -53,24 +56,24 @@ export class SmallGameCanvas extends GameCanvas {
         // move to start of outer arc
         
         this.ctx.lineTo(
-            this.width / 2 + outerRadius * Math.cos(lastAngle),
-            this.height / 2 + outerRadius * Math.sin(lastAngle)
+            0 + outerRadius * Math.cos(lastAngle),
+            0 + outerRadius * Math.sin(lastAngle)
         );
         // draw outer arc
         this.ctx.arc(
-            this.width / 2, 
-            this.height / 2, 
+            0, 
+            0, 
             outerRadius, 
             lastAngle,
             firstAngle,
             true
         );
         this.ctx.lineTo(
-            this.width / 2 + innerRadius * Math.cos(firstAngle),
-            this.height / 2 + innerRadius * Math.sin(firstAngle)
+            0 + innerRadius * Math.cos(firstAngle),
+            0 + innerRadius * Math.sin(firstAngle)
         );
         this.ctx.stroke();
-        
+        this.ctx.resetTransform()
         // this.ctx.strokeRect(
         //     this.gtlx(app.viewPort.x),
         //     this.gtly(app.viewPort.y),
@@ -93,6 +96,8 @@ export class SmallGameCanvas extends GameCanvas {
     }
 
     drawSprite(asteroid: Asteroid) {
+        this.ctx.translate(this.width / 2, this.height / 2);
+        this.ctx.rotate(-this.app.player.angle + Math.PI);
         this.ctx.beginPath();
         this.ctx.arc(
             this.gtlx(asteroid.x),
@@ -104,6 +109,7 @@ export class SmallGameCanvas extends GameCanvas {
         this.ctx.fillStyle = asteroid.color;
         this.ctx.fill();
         this.ctx.closePath();
+        this.ctx.resetTransform();
     }
 
     scaleFactorX(x: number) {
@@ -115,31 +121,34 @@ export class SmallGameCanvas extends GameCanvas {
     }
 
     gtlx(x: number) {
-        return this.scaleFactorX(x) + this.width / 2;
+        return this.scaleFactorX(x);
     }
 
     gtly(y: number) {
-        return this.scaleFactorY(y) + this.height / 2;
+        return this.scaleFactorY(y);
     }
 
     drawPlayer(player: Player) {
+        let nine = 90 * (Math.PI / 180);
+        // nine %= Math.PI / 2;
+        this.ctx.translate(this.width / 2, this.height / 2);
+        this.ctx.rotate(nine);
         this.ctx.beginPath();
         this.ctx.fillStyle = 'red';
         let angle = player.direction;
+
+        let radius = player.distanceFromCenter;
+        let x = radius * Math.cos(nine);
+        let y = radius * Math.sin(nine);
         this.ctx.translate(
-            this.gtlx(player.x),
-            this.gtly(player.y)
+            this.gtlx(x),
+            this.gtly(y)
         );
-        //this.ctx.transform(Math.cos(angle), Math.sin(angle), -Math.sin(angle), Math.cos(angle), player.x, player.y);
-        this.ctx.rotate(angle);
+        // this.ctx.rotate(nine);
         let length = player.shipLength();
-        this.ctx.rect(0, -2, length / 2, 4);
-        this.ctx.rect(length / 2 * -1, -3, length / 2, 6);
+        this.ctx.fillRect(0, -2, length / 2, 4);
+        this.ctx.fillRect(length / 2 * -1, -3, length / 2, 6);
         this.ctx.resetTransform();
-        // this.ctx.lineTo(player.x - 10, player.y + 20);
-        // this.ctx.lineTo(player.x + 10, player.y + 20);
-        // this.ctx.closePath();
-        this.ctx.fill();
         this.ctx.closePath();
     }
 }
