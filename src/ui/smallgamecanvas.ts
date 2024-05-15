@@ -42,7 +42,7 @@ export class SmallGameCanvas extends GameCanvas {
         let lastAngle = sector.maxAngle;
 
         let outerRadius = this.scaleFactorX( 0 ) ;
-        let innerRadius = this.scaleFactorX( 2000 ) ;
+        let innerRadius = this.scaleFactorX( this.app.solarSystem.maxRadius ) ;
         this.drawPie(firstAngle, lastAngle, innerRadius, outerRadius);
     }
 
@@ -87,15 +87,13 @@ export class SmallGameCanvas extends GameCanvas {
     }
 
     drawViewPort() {
-
         let firstAngle = this.app.viewPort.getMinArc();
         let lastAngle = this.app.viewPort.getMaxArc();
-
         let outerRadius = this.scaleFactorX( this.app.viewPort.getMaxRadius()) ;
         let innerRadius = this.scaleFactorX( this.app.viewPort.getMinRadius()) ;
         this.drawPie(firstAngle, lastAngle, innerRadius, outerRadius);
     }
-    
+
     drawPlanetoid(planetoid: Planetoid) {
         this.ctx.beginPath();
         this.ctx.arc(

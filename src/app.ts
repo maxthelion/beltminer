@@ -67,6 +67,7 @@ export default class App {
     actionsBar: ActionsBar;
     currentSectorIndex: number = 0;
     sectors: Sector[] = [];
+    totalSectors = 10;
     constructor(spriteSheet: HTMLImageElement) {
         this.spriteSheet = spriteSheet;
         let largeHolderWidth = document.getElementById("largeholder")?.clientWidth;
@@ -85,7 +86,7 @@ export default class App {
         this.asteroids = [ ];
         // iterate through sections of the solar system and create asteroids in each section
         // let sectionWidth = 0.1 * Math.PI;
-        let numSectors = 10;
+        let numSectors = this.totalSectors;
         for (let sectorNum = 0; sectorNum < numSectors; sectorNum++) {
             let sector = new Sector(sectorNum);
             this.sectors[sectorNum] = sector;
@@ -178,7 +179,8 @@ export default class App {
     }
 
     calculateSector() {
-        let sector = Math.floor(this.player.angle / (0.1 * Math.PI));
+        let sectorSize = (2 * Math.PI) / this.totalSectors;
+        let sector = Math.floor(this.player.angle / sectorSize);
         if (sector !== this.currentSectorIndex) {
             this.currentSectorIndex = sector;
             console.log("sector", sector);

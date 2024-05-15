@@ -48,7 +48,7 @@ var SmallGameCanvas = /** @class */ (function (_super) {
         var firstAngle = sector.minAngle;
         var lastAngle = sector.maxAngle;
         var outerRadius = this.scaleFactorX(0);
-        var innerRadius = this.scaleFactorX(2000);
+        var innerRadius = this.scaleFactorX(this.app.solarSystem.maxRadius);
         this.drawPie(firstAngle, lastAngle, innerRadius, outerRadius);
     };
     SmallGameCanvas.prototype.drawPie = function (firstAngle, lastAngle, innerRadius, outerRadius) {

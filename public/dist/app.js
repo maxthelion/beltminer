@@ -50,6 +50,7 @@ var App = /** @class */ (function () {
         this.showActions = false;
         this.currentSectorIndex = 0;
         this.sectors = [];
+        this.totalSectors = 10;
         this.spriteSheet = spriteSheet;
         var largeHolderWidth = (_a = document.getElementById("largeholder")) === null || _a === void 0 ? void 0 : _a.clientWidth;
         this.solarSystem = new SolarSystem();
@@ -64,7 +65,7 @@ var App = /** @class */ (function () {
         this.asteroids = [];
         // iterate through sections of the solar system and create asteroids in each section
         // let sectionWidth = 0.1 * Math.PI;
-        var numSectors = 10;
+        var numSectors = this.totalSectors;
         for (var sectorNum = 0; sectorNum < numSectors; sectorNum++) {
             var sector = new Sector(sectorNum);
             this.sectors[sectorNum] = sector;
@@ -149,7 +150,8 @@ var App = /** @class */ (function () {
         });
     };
     App.prototype.calculateSector = function () {
-        var sector = Math.floor(this.player.angle / (0.1 * Math.PI));
+        var sectorSize = (2 * Math.PI) / this.totalSectors;
+        var sector = Math.floor(this.player.angle / sectorSize);
         if (sector !== this.currentSectorIndex) {
             this.currentSectorIndex = sector;
             console.log("sector", sector);
