@@ -16,16 +16,18 @@ var __extends = (this && this.__extends) || (function () {
 import { Sprite } from './sprites.js';
 var Player = /** @class */ (function (_super) {
     __extends(Player, _super);
-    function Player() {
+    function Player(system) {
         var _this = _super.call(this) || this;
-        _this.acceleration = 0.005;
+        _this.slowAcceleration = 0.0001;
+        _this.fastAcceleration = 0.01;
+        _this.acceleration = _this.fastAcceleration;
         _this.rotationalAcceleration = 0.05;
         _this.color = 'grey';
         _this.accelerating = false;
-        _this.x = 200;
-        _this.y = 50;
+        _this.x = 0;
+        _this.y = 0;
         _this.angle = 0;
-        _this.distanceFromCenter = 200;
+        _this.distanceFromCenter = system.minRadius + ((system.maxRadius - system.minRadius) / 2);
         _this.cx = 0;
         _this.cy = 0;
         _this.direction = Math.random() * Math.PI * 2;

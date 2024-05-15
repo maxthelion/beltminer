@@ -23,6 +23,19 @@ class ViewPort {
     }
 }
 
+export class Sector {
+    index: number;
+    minAngle: number;
+    maxAngle: number;
+    percentage: number;
+    constructor(index: number) {
+        this.index = index;
+        let totalSectors = 10;
+        this.percentage = index / totalSectors;
+        this.minAngle = (this.percentage) * Math.PI * 2;
+        this.maxAngle = ((index + 1) / totalSectors) * Math.PI * 2;
+    }
+}
 export default class App {
     gameLoop: GameLoop;
     sprites: Sprite[];
@@ -51,7 +64,9 @@ export default class App {
     infoPane: InfoPane;
     modalPane: ModalPane | undefined;
     showActions = false;
-    actionsBar: ActionsBar
+    actionsBar: ActionsBar;
+    currentSectorIndex: number = 0;
+    sectors: Sector[] = [];
     constructor(spriteSheet: HTMLImageElement) {
         this.spriteSheet = spriteSheet;
         let largeHolderWidth = document.getElementById("largeholder")?.clientWidth;
@@ -59,7 +74,7 @@ export default class App {
         this.viewPort = this.defaultViewPort;
         this.sprites = [];
 
-        this.player = new Player();
+        this.player = new Player(this.solarSystem);
         this.sprites.push(this.player);
 
         let ceres = new Planetoid(this.solarSystem, "Ceres");
@@ -68,9 +83,17 @@ export default class App {
         this.planetoids.push(ceres);
 
         this.asteroids = [ ];
-        
-        for (let i = 0; i < this.solarSystem.asteroidNum; i++) {
-            this.asteroids.push(new Asteroid(this.solarSystem));
+        // iterate through sections of the solar system and create asteroids in each section
+        // let sectionWidth = 0.1 * Math.PI;
+        let numSectors = 10;
+        for (let sectorNum = 0; sectorNum < numSectors; sectorNum++) {
+            let sector = new Sector(sectorNum);
+            this.sectors[sectorNum] = sector;
+            let density = 100 * (sectorNum + 1);
+            for (let i = 0; i < density; i++) {
+                this.asteroids.push(new Asteroid(this.solarSystem, sector));
+            }
+            //this.asteroids.push(new Asteroid(this.solarSystem, sectorNum));
         }
         this.actionsBar = new ActionsBar(this);
         this.infoPane = new InfoPane(this);
@@ -153,16 +176,28 @@ export default class App {
             radialWidth: entity.radius * 4
         });
     }
+
+    calculateSector() {
+        let sector = Math.floor(this.player.angle / (0.1 * Math.PI));
+        if (sector !== this.currentSectorIndex) {
+            this.currentSectorIndex = sector;
+            console.log("sector", sector);
+        }
+    }
+
+    getSector() {
+        return this.sectors[this.currentSectorIndex];
+    }
 }
 
 
 
 export class SolarSystem {
-    asteroidNum = 100;
+    asteroidNum = 1000;
     centerX = 0;
     centerY = 0;
-    minRadius = 150;
-    maxRadius = 250;
+    minRadius = 1000;
+    maxRadius = 2500;
     width: number;
     height: number;
 

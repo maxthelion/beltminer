@@ -55,6 +55,8 @@ var GameLoop = /** @class */ (function () {
         }
         this.app.player.update();
         this.app.viewPort.update(player);
+        this.app.calculateSector();
+        // render stuff
         this.app.largeGameCanvas.draw(this.app);
         this.app.smallGameCanvas.draw(this.app);
         this.app.infoPane.render();

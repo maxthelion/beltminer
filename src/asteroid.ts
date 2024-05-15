@@ -1,4 +1,4 @@
-import { SolarSystem } from './app.js';
+import { Sector, SolarSystem } from './app.js';
 import AsteroidRenderer from './asteroidrenderer.js';
 import { Sprite } from './sprites.js';
 
@@ -16,24 +16,27 @@ export class Asteroid extends Sprite {
     rotation: number;
     rotationSpeed: number;
 
-    constructor(system: SolarSystem) {
+    
+
+    constructor(system: SolarSystem, sector: Sector) {
         super();
-        this.color = "rgb(" +
-            Math.floor(Math.random() * 255) + "," +
-            Math.floor(Math.random() * 255) + "," +
-            Math.floor(Math.random() * 255) + ")";
-        this.radius = Math.random() * 4 + 2;
+        let totalSectors = 10;
+        // color generated based on sector
+        this.color = `hsl(${(sector.percentage) * 360}, 100%, 50%)`;
+        this.radius = Math.random() + 0.02;
         this.mass = this.radius * 0.0005;
-        this.angle = Math.random() * Math.PI * 2;
+        // angle based on sector
+
+        this.angle = Math.random() * (sector.maxAngle - sector.minAngle) + sector.minAngle;
+        // this.angle = Math.random() * Math.PI * 2;
         this.cx = system.centerX;
         this.cy = system.centerY;
         this.a = Math.random() * (system.maxRadius - system.minRadius) + system.minRadius;
         this.b = Math.random() * (system.maxRadius - system.minRadius) + system.minRadius;
-        this.distanceFromCenter =  200 // Math.random() * 50 + 50;
-        this.speed = Math.random() * 0.001 + 0.001;
+        this.speed = Math.random() * 0.0000001 + 0.0000001;
         this.asteroidPoints = AsteroidRenderer.generateAsteroidShape(10, this.radius);
         this.rotation = Math.random() * Math.PI * 2;
-        this.rotationSpeed = Math.random() * 0.001 + 0.0002;
+        this.rotationSpeed = Math.random() * 0.001 + 0.002;
     }
 
     update() {

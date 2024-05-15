@@ -14,10 +14,13 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 import { Asteroid } from './asteroid.js';
+import { Sector } from './app.js';
 var Planetoid = /** @class */ (function (_super) {
     __extends(Planetoid, _super);
     function Planetoid(system, name) {
-        var _this = _super.call(this, system) || this;
+        var _this = this;
+        var sector = new Sector(0);
+        _this = _super.call(this, system, sector) || this;
         _this.color = 'cyan';
         _this.mass = 1;
         _this.radius = 30;

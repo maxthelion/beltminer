@@ -17,28 +17,28 @@ import AsteroidRenderer from './asteroidrenderer.js';
 import { Sprite } from './sprites.js';
 var Asteroid = /** @class */ (function (_super) {
     __extends(Asteroid, _super);
-    function Asteroid(system) {
+    function Asteroid(system, sector) {
         var _this = _super.call(this) || this;
         _this.angle = 0; // Initial angle
         _this.speed = 0.1; // Speed of rotation
         _this.color = 'white';
         _this.mass = 1;
-        _this.color = "rgb(" +
-            Math.floor(Math.random() * 255) + "," +
-            Math.floor(Math.random() * 255) + "," +
-            Math.floor(Math.random() * 255) + ")";
-        _this.radius = Math.random() * 4 + 2;
+        var totalSectors = 10;
+        // color generated based on sector
+        _this.color = "hsl(".concat((sector.percentage) * 360, ", 100%, 50%)");
+        _this.radius = Math.random() + 0.02;
         _this.mass = _this.radius * 0.0005;
-        _this.angle = Math.random() * Math.PI * 2;
+        // angle based on sector
+        _this.angle = Math.random() * (sector.maxAngle - sector.minAngle) + sector.minAngle;
+        // this.angle = Math.random() * Math.PI * 2;
         _this.cx = system.centerX;
         _this.cy = system.centerY;
         _this.a = Math.random() * (system.maxRadius - system.minRadius) + system.minRadius;
         _this.b = Math.random() * (system.maxRadius - system.minRadius) + system.minRadius;
-        _this.distanceFromCenter = 200; // Math.random() * 50 + 50;
-        _this.speed = Math.random() * 0.001 + 0.001;
+        _this.speed = Math.random() * 0.0000001 + 0.0000001;
         _this.asteroidPoints = AsteroidRenderer.generateAsteroidShape(10, _this.radius);
         _this.rotation = Math.random() * Math.PI * 2;
-        _this.rotationSpeed = Math.random() * 0.001 + 0.0002;
+        _this.rotationSpeed = Math.random() * 0.001 + 0.002;
         return _this;
     }
     Asteroid.prototype.update = function () {

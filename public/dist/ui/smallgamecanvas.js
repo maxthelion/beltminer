@@ -31,6 +31,8 @@ var SmallGameCanvas = /** @class */ (function (_super) {
     SmallGameCanvas.prototype.draw = function (app) {
         var _this = this;
         this.ctx.clearRect(0, 0, this.width, this.height);
+        // this.ctx.fillStyle = "rgba(0, 0, 0, 0.01)"
+        // this.ctx.fillRect(0, 0, this.width, this.height);
         app.asteroids.forEach(function (asteroid) {
             _this.drawSprite(asteroid);
         });
@@ -38,19 +40,24 @@ var SmallGameCanvas = /** @class */ (function (_super) {
             _this.drawPlanetoid(planetoid);
         });
         this.drawViewPort();
+        this.drawSector();
         this.drawPlayer(app.sprites[0]);
     };
-    SmallGameCanvas.prototype.drawViewPort = function () {
+    SmallGameCanvas.prototype.drawSector = function () {
+        var sector = this.app.getSector();
+        var firstAngle = sector.minAngle;
+        var lastAngle = sector.maxAngle;
+        var outerRadius = this.scaleFactorX(0);
+        var innerRadius = this.scaleFactorX(2000);
+        this.drawPie(firstAngle, lastAngle, innerRadius, outerRadius);
+    };
+    SmallGameCanvas.prototype.drawPie = function (firstAngle, lastAngle, innerRadius, outerRadius) {
         // draw the viewport
         this.ctx.translate(this.width / 2, this.height / 2);
         this.ctx.rotate(-this.app.player.angle + Math.PI);
         this.ctx.strokeStyle = 'white';
         this.ctx.lineWidth = 1;
         this.ctx.beginPath();
-        var firstAngle = this.app.viewPort.getMinArc();
-        var lastAngle = this.app.viewPort.getMaxArc();
-        var outerRadius = this.scaleFactorX(this.app.viewPort.getMaxRadius());
-        var innerRadius = this.scaleFactorX(this.app.viewPort.getMinRadius());
         // draw a slice of the circle starting converting x to radius and y to angle
         this.ctx.arc(0, 0, innerRadius, firstAngle, lastAngle);
         // move to start of outer arc
@@ -60,12 +67,13 @@ var SmallGameCanvas = /** @class */ (function (_super) {
         this.ctx.lineTo(0 + innerRadius * Math.cos(firstAngle), 0 + innerRadius * Math.sin(firstAngle));
         this.ctx.stroke();
         this.ctx.resetTransform();
-        // this.ctx.strokeRect(
-        //     this.gtlx(app.viewPort.x),
-        //     this.gtly(app.viewPort.y),
-        //     this.scaleFactorX(app.viewPort.width),
-        //     this.scaleFactorY(app.viewPort.height)
-        // );
+    };
+    SmallGameCanvas.prototype.drawViewPort = function () {
+        var firstAngle = this.app.viewPort.getMinArc();
+        var lastAngle = this.app.viewPort.getMaxArc();
+        var outerRadius = this.scaleFactorX(this.app.viewPort.getMaxRadius());
+        var innerRadius = this.scaleFactorX(this.app.viewPort.getMinRadius());
+        this.drawPie(firstAngle, lastAngle, innerRadius, outerRadius);
     };
     SmallGameCanvas.prototype.drawPlanetoid = function (planetoid) {
         this.ctx.beginPath();
@@ -78,7 +86,14 @@ var SmallGameCanvas = /** @class */ (function (_super) {
         this.ctx.translate(this.width / 2, this.height / 2);
         this.ctx.rotate(-this.app.player.angle + Math.PI);
         this.ctx.beginPath();
-        this.ctx.arc(this.gtlx(asteroid.x), this.gtly(asteroid.y), this.scaleFactorX(asteroid.radius), 0, Math.PI * 2);
+        this.ctx.fillRect(this.gtlx(asteroid.x), this.gtly(asteroid.y), Math.ceil(this.scaleFactorX(asteroid.radius)), Math.ceil(this.scaleFactorY(asteroid.radius)));
+        // this.ctx.arc(
+        //     this.gtlx(asteroid.x),
+        //     this.gtly(asteroid.y),
+        //     Math.round(this.scaleFactorX(asteroid.radius)),
+        //     0,
+        //     Math.PI * 2
+        // );
         this.ctx.fillStyle = asteroid.color;
         this.ctx.fill();
         this.ctx.closePath();

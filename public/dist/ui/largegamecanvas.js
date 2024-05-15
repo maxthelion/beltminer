@@ -68,9 +68,6 @@ var LargeGameCanvas = /** @class */ (function (_super) {
     };
     LargeGameCanvas.prototype.centerOnPlayer = function (player) {
         var _this = this;
-        // this.ctx.translate(this.width / 2, this.height / 2);
-        // this.ctx.scale(1 + app.zoomLevel, 1 + app.zoomLevel);
-        // this.ctx.translate(-player.x, -player.y);
         this.ctx.beginPath();
         this.app.asteroids.forEach(function (asteroid) {
             if (_this.app.viewPort.containsEntity(asteroid) === false)
@@ -81,9 +78,9 @@ var LargeGameCanvas = /** @class */ (function (_super) {
         //     if (this.app.viewPort.containsEntity(planetoid) === false) return;
         //     this.drawPlanetoid(planetoid, player);
         // });
-        // if (player.lockedAsteroid) {
-        //     this.drawLockedAsteroid(player.lockedAsteroid, player);
-        // }
+        if (player.lockedAsteroid) {
+            this.drawLockedAsteroid(player.lockedAsteroid, player);
+        }
         this.drawPlayer(player);
     };
     LargeGameCanvas.prototype.drawPlanetoid = function (planetoid, player) {
@@ -114,8 +111,8 @@ var LargeGameCanvas = /** @class */ (function (_super) {
         var y = this.height - (this.height / 2 + (relativeY * this.height));
         this.ctx.translate(x, y);
         this.ctx.rotate(asteroid.rotation);
-        this.drawCircle(asteroid);
-        // this.drawNormalizedAsteroid(normalizedAsteroid, asteroid);
+        // this.drawCircle(asteroid);
+        this.drawAsteroidPoints(asteroid);
         // this.ctx.arc(normalizedAsteroid.x, normalizedAsteroid.y, asteroid.radius * this.scaleFactor(), 0, Math.PI * 2);
         this.ctx.resetTransform();
         this.ctx.fill();
@@ -123,7 +120,7 @@ var LargeGameCanvas = /** @class */ (function (_super) {
     LargeGameCanvas.prototype.drawCircle = function (asteroid) {
         this.ctx.arc(0, 0, asteroid.radius * this.scaleFactor(), 0, Math.PI * 2);
     };
-    LargeGameCanvas.prototype.drawNormalizedAsteroid = function (normalized, asteroid) {
+    LargeGameCanvas.prototype.drawAsteroidPoints = function (asteroid) {
         this.ctx.beginPath();
         var points = asteroid.asteroidPoints.slice();
         var na = {

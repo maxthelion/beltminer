@@ -1,5 +1,6 @@
 import {Sprite} from './sprites.js';
 import { Asteroid } from './asteroid.js';
+import { SolarSystem } from './app.js';
 
 type InventorySlot = {
     itemType: string,
@@ -7,7 +8,9 @@ type InventorySlot = {
 }
 export default class Player extends Sprite {
     direction: number;
-    acceleration = 0.005;
+    slowAcceleration: number = 0.0001;
+    fastAcceleration: number = 0.01;
+    acceleration = this.fastAcceleration;
     rotationalAcceleration = 0.05;
     color = 'grey';
     lockedAsteroid: Asteroid | null;
@@ -17,12 +20,12 @@ export default class Player extends Sprite {
     cx: number;
     cy: number;
 
-    constructor() {
+    constructor(system: SolarSystem) {
         super();
-        this.x = 200;
-        this.y = 50;
+        this.x = 0;
+        this.y = 0;
         this.angle = 0;
-        this.distanceFromCenter = 200;
+        this.distanceFromCenter = system.minRadius + ((system.maxRadius - system.minRadius) / 2);
         this.cx = 0;
         this.cy = 0;
         this.direction = Math.random() * Math.PI * 2;
