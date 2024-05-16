@@ -27,12 +27,26 @@ export class SmallGameCanvas extends GameCanvas {
             this.drawSprite(asteroid);
         });
         app.planetoids.forEach(planetoid => {
-            this.drawPlanetoid(planetoid);
+            this.drawSprite(planetoid);
         });
         this.drawViewPort();
         this.drawSector();
+        this.drawSubSectors();
         this.drawPlayer(app.sprites[0] as Player);
         
+    }
+
+    drawSubSectors() {
+        this.app.subSectors.forEach(radialSectors => {
+            radialSectors.forEach(subSector => {
+                let firstAngle = subSector.minAngle;
+                let lastAngle = subSector.maxAngle;
+                let outerRadius = this.scaleFactorX( subSector.minRadius ) ;
+                let innerRadius = this.scaleFactorX( subSector.maxRadius ) ;
+                // console.log(firstAngle, lastAngle, innerRadius, outerRadius);
+                this.drawPie(firstAngle, lastAngle, innerRadius, outerRadius);
+            })
+        })
     }
 
     drawSector() {
@@ -41,7 +55,7 @@ export class SmallGameCanvas extends GameCanvas {
         let firstAngle = sector.minAngle;
         let lastAngle = sector.maxAngle;
 
-        let outerRadius = this.scaleFactorX( 0 ) ;
+        let outerRadius = this.scaleFactorX( this.app.solarSystem.minRadius ) ;
         let innerRadius = this.scaleFactorX( this.app.solarSystem.maxRadius ) ;
         this.drawPie(firstAngle, lastAngle, innerRadius, outerRadius);
     }
@@ -82,7 +96,10 @@ export class SmallGameCanvas extends GameCanvas {
             0 + innerRadius * Math.cos(firstAngle),
             0 + innerRadius * Math.sin(firstAngle)
         );
+        this.ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
         this.ctx.stroke();
+        // this.ctx.clip();
+        this.ctx.fill();
         this.ctx.resetTransform()
     }
 
@@ -94,29 +111,30 @@ export class SmallGameCanvas extends GameCanvas {
         this.drawPie(firstAngle, lastAngle, innerRadius, outerRadius);
     }
 
-    drawPlanetoid(planetoid: Planetoid) {
-        this.ctx.beginPath();
-        this.ctx.arc(
-            this.gtlx(planetoid.x),
-            this.gtly(planetoid.y),
-            this.scaleFactorX(planetoid.radius),
-            0,
-            Math.PI * 2
-        );
-        this.ctx.fillStyle = planetoid.color;
-        this.ctx.fill();
-        this.ctx.closePath();
-    }
+    // drawPlanetoid(planetoid: Planetoid) {
+    //     this.ctx.beginPath();
+    //     this.ctx.arc(
+    //         this.gtlx(planetoid.x),
+    //         this.gtly(planetoid.y),
+    //         this.scaleFactorX(planetoid.radius),
+    //         0,
+    //         Math.PI * 2
+    //     );
+    //     this.ctx.fillStyle = planetoid.color;
+    //     this.ctx.fill();
+    //     this.ctx.closePath();
+    // }
 
-    drawSprite(asteroid: Asteroid) {
+    drawSprite(sprite: Asteroid) {
         this.ctx.translate(this.width / 2, this.height / 2);
         this.ctx.rotate(-this.app.player.angle + Math.PI);
-        this.ctx.beginPath();
+        // this.ctx.beginPath();
+        this.ctx.fillStyle = sprite.color;
         this.ctx.fillRect(
-            this.gtlx(asteroid.x),
-            this.gtly(asteroid.y),
-            Math.ceil(this.scaleFactorX(asteroid.radius)),
-            Math.ceil(this.scaleFactorY(asteroid.radius))
+            this.gtlx(sprite.x),
+            this.gtly(sprite.y),
+            Math.ceil(this.scaleFactorX(sprite.radius)),
+            Math.ceil(this.scaleFactorY(sprite.radius))
         );
         
         // this.ctx.arc(
@@ -126,7 +144,6 @@ export class SmallGameCanvas extends GameCanvas {
         //     0,
         //     Math.PI * 2
         // );
-        this.ctx.fillStyle = asteroid.color;
         this.ctx.fill();
         this.ctx.closePath();
         this.ctx.resetTransform();

@@ -62,7 +62,7 @@ export class GameLoop {
         }
         this.app.player.update();
         this.app.viewPort.update(player);
-        this.app.calculateSector();
+        this.app.updateGame();
         // render stuff
         this.app.largeGameCanvas.draw(this.app);
         this.app.smallGameCanvas.draw(this.app);

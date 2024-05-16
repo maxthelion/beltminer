@@ -1,5 +1,6 @@
 import { Asteroid } from './asteroid.js';
-import { Sector, SolarSystem } from './app.js';
+import SolarSystem  from './solarsystem.js';
+import { Sector } from './sectors.js';
 
 export class Planetoid extends Asteroid {
     radius: number;

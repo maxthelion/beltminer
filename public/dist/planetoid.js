@@ -14,7 +14,7 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 import { Asteroid } from './asteroid.js';
-import { Sector } from './app.js';
+import { Sector } from './sectors.js';
 var Planetoid = /** @class */ (function (_super) {
     __extends(Planetoid, _super);
     function Planetoid(system, name) {

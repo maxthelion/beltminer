@@ -37,17 +37,31 @@ var SmallGameCanvas = /** @class */ (function (_super) {
             _this.drawSprite(asteroid);
         });
         app.planetoids.forEach(function (planetoid) {
-            _this.drawPlanetoid(planetoid);
+            _this.drawSprite(planetoid);
         });
         this.drawViewPort();
         this.drawSector();
+        this.drawSubSectors();
         this.drawPlayer(app.sprites[0]);
+    };
+    SmallGameCanvas.prototype.drawSubSectors = function () {
+        var _this = this;
+        this.app.subSectors.forEach(function (radialSectors) {
+            radialSectors.forEach(function (subSector) {
+                var firstAngle = subSector.minAngle;
+                var lastAngle = subSector.maxAngle;
+                var outerRadius = _this.scaleFactorX(subSector.minRadius);
+                var innerRadius = _this.scaleFactorX(subSector.maxRadius);
+                // console.log(firstAngle, lastAngle, innerRadius, outerRadius);
+                _this.drawPie(firstAngle, lastAngle, innerRadius, outerRadius);
+            });
+        });
     };
     SmallGameCanvas.prototype.drawSector = function () {
         var sector = this.app.getSector();
         var firstAngle = sector.minAngle;
         var lastAngle = sector.maxAngle;
-        var outerRadius = this.scaleFactorX(0);
+        var outerRadius = this.scaleFactorX(this.app.solarSystem.minRadius);
         var innerRadius = this.scaleFactorX(this.app.solarSystem.maxRadius);
         this.drawPie(firstAngle, lastAngle, innerRadius, outerRadius);
     };
@@ -65,7 +79,10 @@ var SmallGameCanvas = /** @class */ (function (_super) {
         // draw outer arc
         this.ctx.arc(0, 0, outerRadius, lastAngle, firstAngle, true);
         this.ctx.lineTo(0 + innerRadius * Math.cos(firstAngle), 0 + innerRadius * Math.sin(firstAngle));
+        this.ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
         this.ctx.stroke();
+        // this.ctx.clip();
+        this.ctx.fill();
         this.ctx.resetTransform();
     };
     SmallGameCanvas.prototype.drawViewPort = function () {
@@ -75,18 +92,25 @@ var SmallGameCanvas = /** @class */ (function (_super) {
         var innerRadius = this.scaleFactorX(this.app.viewPort.getMinRadius());
         this.drawPie(firstAngle, lastAngle, innerRadius, outerRadius);
     };
-    SmallGameCanvas.prototype.drawPlanetoid = function (planetoid) {
-        this.ctx.beginPath();
-        this.ctx.arc(this.gtlx(planetoid.x), this.gtly(planetoid.y), this.scaleFactorX(planetoid.radius), 0, Math.PI * 2);
-        this.ctx.fillStyle = planetoid.color;
-        this.ctx.fill();
-        this.ctx.closePath();
-    };
-    SmallGameCanvas.prototype.drawSprite = function (asteroid) {
+    // drawPlanetoid(planetoid: Planetoid) {
+    //     this.ctx.beginPath();
+    //     this.ctx.arc(
+    //         this.gtlx(planetoid.x),
+    //         this.gtly(planetoid.y),
+    //         this.scaleFactorX(planetoid.radius),
+    //         0,
+    //         Math.PI * 2
+    //     );
+    //     this.ctx.fillStyle = planetoid.color;
+    //     this.ctx.fill();
+    //     this.ctx.closePath();
+    // }
+    SmallGameCanvas.prototype.drawSprite = function (sprite) {
         this.ctx.translate(this.width / 2, this.height / 2);
         this.ctx.rotate(-this.app.player.angle + Math.PI);
-        this.ctx.beginPath();
-        this.ctx.fillRect(this.gtlx(asteroid.x), this.gtly(asteroid.y), Math.ceil(this.scaleFactorX(asteroid.radius)), Math.ceil(this.scaleFactorY(asteroid.radius)));
+        // this.ctx.beginPath();
+        this.ctx.fillStyle = sprite.color;
+        this.ctx.fillRect(this.gtlx(sprite.x), this.gtly(sprite.y), Math.ceil(this.scaleFactorX(sprite.radius)), Math.ceil(this.scaleFactorY(sprite.radius)));
         // this.ctx.arc(
         //     this.gtlx(asteroid.x),
         //     this.gtly(asteroid.y),
@@ -94,7 +118,6 @@ var SmallGameCanvas = /** @class */ (function (_super) {
         //     0,
         //     Math.PI * 2
         // );
-        this.ctx.fillStyle = asteroid.color;
         this.ctx.fill();
         this.ctx.closePath();
         this.ctx.resetTransform();

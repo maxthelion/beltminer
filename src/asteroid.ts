@@ -1,6 +1,7 @@
-import { Sector, SolarSystem } from './app.js';
+import { Sector } from './sectors.js';
 import AsteroidRenderer from './asteroidrenderer.js';
 import { Sprite } from './sprites.js';
+import SolarSystem  from './solarsystem.js';
 
 export class Asteroid extends Sprite {
     radius: number;

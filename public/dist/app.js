@@ -8,6 +8,8 @@ import { SmallGameCanvas } from './ui/smallgamecanvas.js';
 import ActionsBar from './ui/actioinsbar.js';
 import { InventoryModalPane } from './ui/modalpane.js';
 import { RadialViewPort } from './radialviewport.js';
+import { Sector, SubSector } from './sectors.js';
+import SolarSystem from './solarsystem.js';
 var ViewPort = /** @class */ (function () {
     function ViewPort(_a) {
         var x = _a.x, y = _a.y, width = _a.width, height = _a.height;
@@ -18,17 +20,6 @@ var ViewPort = /** @class */ (function () {
     }
     return ViewPort;
 }());
-var Sector = /** @class */ (function () {
-    function Sector(index) {
-        this.index = index;
-        var totalSectors = 10;
-        this.percentage = index / totalSectors;
-        this.minAngle = (this.percentage) * Math.PI * 2;
-        this.maxAngle = ((index + 1) / totalSectors) * Math.PI * 2;
-    }
-    return Sector;
-}());
-export { Sector };
 var App = /** @class */ (function () {
     function App(spriteSheet) {
         var _this = this;
@@ -37,7 +28,7 @@ var App = /** @class */ (function () {
         this.defaultViewPort = new RadialViewPort({
             minRadius: 0,
             radialWidth: 100,
-            arcLength: 0.05 * Math.PI * 2,
+            arcLength: 0.02 * Math.PI * 2,
             minArc: 0,
         });
         this.newViewPort = undefined;
@@ -50,6 +41,8 @@ var App = /** @class */ (function () {
         this.showActions = false;
         this.currentSectorIndex = 0;
         this.sectors = [];
+        this.subSectors = [];
+        this.currentSubSector = new SubSector(0, 0);
         this.totalSectors = 10;
         this.spriteSheet = spriteSheet;
         var largeHolderWidth = (_a = document.getElementById("largeholder")) === null || _a === void 0 ? void 0 : _a.clientWidth;
@@ -58,10 +51,15 @@ var App = /** @class */ (function () {
         this.sprites = [];
         this.player = new Player(this.solarSystem);
         this.sprites.push(this.player);
+        this.planetoids = [];
         var ceres = new Planetoid(this.solarSystem, "Ceres");
         this.sprites.push(ceres);
-        this.planetoids = [];
         this.planetoids.push(ceres);
+        for (var i = 0; i < 10; i++) {
+            var otherThing = new Planetoid(this.solarSystem, "Ceres");
+            this.sprites.push(otherThing);
+            this.planetoids.push(otherThing);
+        }
         this.asteroids = [];
         // iterate through sections of the solar system and create asteroids in each section
         // let sectionWidth = 0.1 * Math.PI;
@@ -149,12 +147,49 @@ var App = /** @class */ (function () {
             radialWidth: entity.radius * 4
         });
     };
+    App.prototype.updateGame = function () {
+        this.calculateSector();
+        this.calculateSubSectors();
+        this.calculateViewPort();
+    };
+    App.prototype.calculateSubSectors = function () {
+        var subSectors = SubSector.subSectorNum;
+        var sectorSize = (2 * Math.PI) / (this.totalSectors * subSectors);
+        var subSectorArcIndex = Math.floor(this.player.angle / sectorSize);
+        var minRadius = this.solarSystem.minRadius;
+        var maxRadius = this.solarSystem.maxRadius;
+        var radialRange = maxRadius - minRadius;
+        var radialSectorNum = 10;
+        var subSectorRadialIndex = Math.floor((this.player.distanceFromCenter - minRadius) / radialRange * radialSectorNum);
+        if (subSectorArcIndex !== this.currentSubSector.arcIndex || subSectorRadialIndex !== this.currentSubSector.radialIndex) {
+            this.currentSubSector = new SubSector(subSectorArcIndex, subSectorRadialIndex);
+            this.subSectors[subSectorArcIndex] = this.subSectors[subSectorArcIndex] || [];
+            this.subSectors[subSectorArcIndex][subSectorRadialIndex] = this.currentSubSector;
+            console.log(subSectorRadialIndex);
+        }
+        //console.log(this.subSectors.length)
+    };
+    App.prototype.calculateViewPort = function () {
+        // console.log(this.player.velocity)
+        if (this.player.velocity > 2) {
+            // console.log(this.viewPort.arcLength, this.viewPort.radialWidth)
+            // this.viewPort.radialWidth = Math.abs(this.player.velocity * 10) + 100;
+            // let radialAddition = (this.defaultViewPort.radialWidth) * this.player.velocity;
+            // console.log(this.player.velocity, radialAddition)
+            // this.viewPort.radialWidth = this.defaultViewPort.radialWidth + radialAddition;
+            // this.viewPort.arcLength = Math.abs(this.player.velocity * 10);
+        }
+        else {
+            this.viewPort.radialWidth = this.defaultViewPort.radialWidth;
+            this.viewPort.arcLength = this.defaultViewPort.arcLength;
+        }
+    };
     App.prototype.calculateSector = function () {
         var sectorSize = (2 * Math.PI) / this.totalSectors;
         var sector = Math.floor(this.player.angle / sectorSize);
         if (sector !== this.currentSectorIndex) {
             this.currentSectorIndex = sector;
-            console.log("sector", sector);
+            // console.log("sector", sector);
         }
     };
     App.prototype.getSector = function () {
@@ -163,16 +198,3 @@ var App = /** @class */ (function () {
     return App;
 }());
 export default App;
-var SolarSystem = /** @class */ (function () {
-    function SolarSystem() {
-        this.asteroidNum = 1000;
-        this.centerX = 0;
-        this.centerY = 0;
-        this.minRadius = 1000;
-        this.maxRadius = 2500;
-        this.width = this.maxRadius * 2 + 100;
-        this.height = this.maxRadius * 2 + 100;
-    }
-    return SolarSystem;
-}());
-export { SolarSystem };

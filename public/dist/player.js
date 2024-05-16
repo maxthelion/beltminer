@@ -33,6 +33,7 @@ var Player = /** @class */ (function (_super) {
         _this.direction = Math.random() * Math.PI * 2;
         _this.lockedAsteroid = null;
         _this.inventory = [];
+        _this.velocity = 0;
         return _this;
     }
     Player.prototype.update = function () {
@@ -47,8 +48,11 @@ var Player = /** @class */ (function (_super) {
             this.angle %= Math.PI * 2;
             this.distanceFromCenter -= (this.dx);
             //let radius = 200;
+            var oldX = this.x;
+            var oldY = this.y;
             this.x = this.distanceFromCenter * Math.cos(this.angle);
             this.y = this.distanceFromCenter * Math.sin(this.angle);
+            this.velocity = Math.sqrt(Math.pow(this.x - oldX, 2) + Math.pow(this.y - oldY, 2));
         }
     };
     Player.prototype.shipLength = function () {
