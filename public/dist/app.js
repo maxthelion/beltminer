@@ -44,6 +44,7 @@ var App = /** @class */ (function () {
         this.subSectors = [];
         this.currentSubSector = new SubSector(0, 0);
         this.totalSectors = 10;
+        this.newSubSectors = [];
         this.spriteSheet = spriteSheet;
         var largeHolderWidth = (_a = document.getElementById("largeholder")) === null || _a === void 0 ? void 0 : _a.clientWidth;
         this.solarSystem = new SolarSystem();
@@ -166,6 +167,7 @@ var App = /** @class */ (function () {
             this.subSectors[subSectorArcIndex] = this.subSectors[subSectorArcIndex] || [];
             this.subSectors[subSectorArcIndex][subSectorRadialIndex] = this.currentSubSector;
             console.log(subSectorRadialIndex);
+            this.newSubSectors.push(this.currentSubSector);
         }
         //console.log(this.subSectors.length)
     };

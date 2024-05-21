@@ -60,6 +60,7 @@ export default class App {
     subSectors: SubSector[][] = [];
     currentSubSector: SubSector = new SubSector(0, 0);
     totalSectors = 10;
+    newSubSectors: SubSector[] = [];
     constructor(spriteSheet: HTMLImageElement) {
         this.spriteSheet = spriteSheet;
         let largeHolderWidth = document.getElementById("largeholder")?.clientWidth;
@@ -195,6 +196,7 @@ export default class App {
             this.subSectors[subSectorArcIndex] = this.subSectors[subSectorArcIndex] || [];
             this.subSectors[subSectorArcIndex][subSectorRadialIndex] = this.currentSubSector;
             console.log(subSectorRadialIndex)
+            this.newSubSectors.push(this.currentSubSector);
         }
         //console.log(this.subSectors.length)
     }

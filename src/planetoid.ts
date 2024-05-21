@@ -4,7 +4,7 @@ import { Sector } from './sectors.js';
 
 export class Planetoid extends Asteroid {
     radius: number;
-    color = 'cyan';
+    color = 'orange';
     mass = 1;
     name: string;
     constructor(system: SolarSystem, name: string) {

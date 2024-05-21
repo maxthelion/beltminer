@@ -3,7 +3,6 @@ var GameLoop = /** @class */ (function () {
         this.app = app;
     }
     GameLoop.prototype.update = function () {
-        var _this = this;
         this.processInput();
         if (this.app.newViewPort !== undefined) {
             var deltaWidth = this.app.newViewPort.radialWidth - this.app.viewPort.radialWidth;
@@ -32,25 +31,25 @@ var GameLoop = /** @class */ (function () {
             player.y = player.lockedAsteroid.y;
         }
         else {
-            var influenceDistance_1 = 100;
+            var influenceDistance = 100;
             proximityAsteroids.forEach(function (asteroid) {
                 var dx = asteroid.x - player.x;
                 var dy = asteroid.y - player.y;
                 var distance = Math.sqrt(dx * dx + dy * dy);
-                if (distance < influenceDistance_1) {
-                    // if similar direction, match speed
-                    if (distance < 10 &&
-                        Math.abs(player.dx - asteroid.dx) < 10 &&
-                        Math.abs(player.dy - asteroid.dy) < 10) {
-                        if (distance < 1 && !player.isThrusting()) {
-                            _this.app.lockOn(asteroid);
-                            console.log("influence distance", distance);
-                        }
-                        var inverseDistance = 1 / distance * 0.1;
-                        player.x += (asteroid.x - player.x) * inverseDistance;
-                        player.y += (asteroid.y - player.y) * inverseDistance;
-                    }
-                }
+                // if (distance < influenceDistance) {
+                //     // if similar direction, match speed
+                //     if (distance < 10 &&
+                //         Math.abs(player.dx - asteroid.dx) < 10 &&
+                //         Math.abs(player.dy - asteroid.dy) < 10) {
+                //         if (distance < 1 && !player.isThrusting()) {
+                //             this.app.lockOn(asteroid);
+                //             console.log("influence distance", distance)
+                //         }
+                //         let inverseDistance = 1 / distance * 0.1;
+                //         player.x += (asteroid.x - player.x) * inverseDistance;
+                //         player.y += (asteroid.y - player.y) * inverseDistance;
+                //     } 
+                // }
             });
         }
         this.app.player.update();
