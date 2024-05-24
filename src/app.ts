@@ -11,6 +11,8 @@ import ModalPane, { InventoryModalPane } from './ui/modalpane.js';
 import { RadialViewPort } from './radialviewport.js';
 import { Sector, SubSector } from './sectors.js';
 import SolarSystem from './solarsystem.js';
+import KeyHandler from './keyhandler.js';
+import EntityViewer from './ui/entityviewer.js';
 
 class ViewPort {
     x: number;
@@ -42,16 +44,12 @@ export default class App {
     });
     newViewPort: RadialViewPort | undefined = undefined;
     viewPort: RadialViewPort;
-    pressedKeys = {
-        "ArrowLeft": false,
-        "ArrowRight": false,
-        "ArrowUp": false,
-        "ArrowDown": false
-    };
+    keyHandler: KeyHandler;
     
     player: Player;
     solarSystem: SolarSystem;
     infoPane: InfoPane;
+    entityViewer: EntityViewer;
     modalPane: ModalPane | undefined;
     showActions = false;
     actionsBar: ActionsBar;
@@ -59,11 +57,12 @@ export default class App {
     sectors: Sector[] = [];
     subSectors: SubSector[][] = [];
     currentSubSector: SubSector = new SubSector(0, 0);
-    totalSectors = 10;
     newSubSectors: SubSector[] = [];
+    focussedSprite: Sprite | undefined;
+
     constructor(spriteSheet: HTMLImageElement) {
         this.spriteSheet = spriteSheet;
-        let largeHolderWidth = document.getElementById("largeholder")?.clientWidth;
+        
         this.solarSystem = new SolarSystem();
         this.viewPort = this.defaultViewPort;
         this.sprites = [];
@@ -84,47 +83,48 @@ export default class App {
         this.asteroids = [ ];
         // iterate through sections of the solar system and create asteroids in each section
         // let sectionWidth = 0.1 * Math.PI;
-        let numSectors = this.totalSectors;
+        let numSectors = Sector.sectorNum;
         for (let sectorNum = 0; sectorNum < numSectors; sectorNum++) {
             let sector = new Sector(sectorNum);
             this.sectors[sectorNum] = sector;
             let density = 100 * (sectorNum + 1);
             for (let i = 0; i < density; i++) {
-                this.asteroids.push(new Asteroid(this.solarSystem, sector));
+                let asteroid = new Asteroid(this.solarSystem, sector);
+                this.sectors[sectorNum].asteroids = this.sectors[sectorNum].asteroids || [];
+                this.sectors[sectorNum].asteroids.push(asteroid);
+
+
             }
+            this.asteroids = this.asteroids.concat(this.sectors[sectorNum].asteroids);
             //this.asteroids.push(new Asteroid(this.solarSystem, sectorNum));
         }
         this.actionsBar = new ActionsBar(this);
         this.infoPane = new InfoPane(this);
-        this.smallGameCanvas = new SmallGameCanvas(this);
+        this.entityViewer = new EntityViewer(this);
+        let largeHolderWidth = document.getElementById("largescreen")?.clientWidth;
+        let smallHolderWidth = document.getElementById("smallscreen")?.clientWidth;
+        // console.log(smallHolderWidth)
+        this.smallGameCanvas = new SmallGameCanvas(this, smallHolderWidth!);
         this.largeGameCanvas = new LargeGameCanvas(this, largeHolderWidth || 800, this.spriteSheet);
+        this.resizeCanvasses();
         this.gameLoop = new GameLoop(this);
-        window.addEventListener("resize", () => {
-            console.log("resize");
-            largeHolderWidth = document.getElementById("largeholder")?.clientWidth;
-            this.largeGameCanvas.setWidth(largeHolderWidth || 800);
-        });
-        document.addEventListener('keydown', (e) => {
-            if (this.pressedKeys[e.key] !== undefined) {
-                this.pressedKeys[e.key] = true;
-            }
-        });
-        document.addEventListener('keyup', (e) => {
-            if (this.pressedKeys[e.key] !== undefined) {
-                this.pressedKeys[e.key] = false;
-            }
-            if (e.key === "e") {
-                if (this.modalPane) {
-                    this.modalPane = undefined;
-                } else {
-                    this.showInventory();
-                }
-            }
-        });
+        window.addEventListener("resize", this.resizeCanvasses.bind(this));
+        this.keyHandler = new KeyHandler(this);
+    }
+
+    resizeCanvasses() {
+        let largeHolderEl = document.getElementById("largescreen")
+        let largeHolderWidth = largeHolderEl!.clientWidth;
+        let largeHolderHeight = largeHolderEl!.clientHeight;
+        this.largeGameCanvas.setDimensions(largeHolderWidth || 800, largeHolderHeight || 800);
+        let smallHolderEl = document.getElementById("smallscreen")
+        let smallHolderWidth = smallHolderEl!.clientWidth;
+        let smallHolderHeight = smallHolderEl!.clientHeight;
+        console.log(smallHolderWidth, smallHolderHeight)
+        this.smallGameCanvas.setDimensions(smallHolderWidth || 200, smallHolderHeight || 200);
     }
 
     showInventory() {
-        console.log("show inventory");
         this.modalPane = new InventoryModalPane(this);
         this.modalPane.show();
     }
@@ -149,6 +149,10 @@ export default class App {
         return this.asteroids.filter(asteroid => {
             return this.areAnglesClose(asteroid.angle, this.player.angle, 0.1 * Math.PI) 
         });
+    }
+
+    getSubSectors() {
+        return [this.currentSubSector]
     }
 
     areAnglesClose(theta1: number, theta2: number, thresholdAngle: number) {
@@ -184,18 +188,18 @@ export default class App {
 
     calculateSubSectors() {
         let subSectors = SubSector.subSectorNum;
-        let sectorSize = (2 * Math.PI) / (this.totalSectors * subSectors);
+        let sectorSize = (2 * Math.PI) / (Sector.sectorNum * subSectors);
         let subSectorArcIndex = Math.floor(this.player.angle / sectorSize);
         let minRadius = this.solarSystem.minRadius;
         let maxRadius = this.solarSystem.maxRadius;
         let radialRange = maxRadius - minRadius;
-        let radialSectorNum = 10;
+        let radialSectorNum = SubSector.radialDivisions;
         let subSectorRadialIndex = Math.floor((this.player.distanceFromCenter - minRadius) / radialRange * radialSectorNum);
         if (subSectorArcIndex !== this.currentSubSector.arcIndex || subSectorRadialIndex !== this.currentSubSector.radialIndex) {
             this.currentSubSector = new SubSector(subSectorArcIndex, subSectorRadialIndex);
             this.subSectors[subSectorArcIndex] = this.subSectors[subSectorArcIndex] || [];
             this.subSectors[subSectorArcIndex][subSectorRadialIndex] = this.currentSubSector;
-            console.log(subSectorRadialIndex)
+            // console.log(subSectorRadialIndex, subSectorArcIndex)
             this.newSubSectors.push(this.currentSubSector);
         }
         //console.log(this.subSectors.length)
@@ -217,7 +221,7 @@ export default class App {
     }
 
     calculateSector() {
-        let sectorSize = (2 * Math.PI) / this.totalSectors;
+        let sectorSize = (2 * Math.PI) / Sector.sectorNum;
         let sector = Math.floor(this.player.angle / sectorSize);
         if (sector !== this.currentSectorIndex) {
             this.currentSectorIndex = sector;
@@ -227,6 +231,39 @@ export default class App {
 
     getSector() {
         return this.sectors[this.currentSectorIndex];
+    }
+
+    toggleInventory() {
+        if (this.modalPane) {
+            this.modalPane = undefined;
+        } else {
+            this.showInventory();
+        }
+    }
+
+    cycleProximateObjects() {
+        let sector = this.getSector();
+        let subSectorArcIndex = this.currentSubSector.arcIndex;
+        let radialSectorIndex = this.currentSubSector.radialIndex;
+        let proximateAsteroids = sector.subSectorsAsteroids[subSectorArcIndex][radialSectorIndex];
+        // console.log(sector.subSectorsAsteroids[subSectorArcIndex]);
+        // console.log(proximateAsteroids.length);
+        if (!proximateAsteroids) {
+            return;
+        }
+        let focussedIndex = proximateAsteroids.indexOf(this.focussedSprite as Asteroid);
+        if (focussedIndex === -1) {
+            this.focussedSprite = proximateAsteroids[0];
+        } else {
+            let nextIndex = focussedIndex + 1;
+            if (nextIndex >= proximateAsteroids.length) {
+                nextIndex = 0;
+            }
+            this.focussedSprite = proximateAsteroids[nextIndex];
+            // console.log(this.focussedSprite, proximateAsteroids.length, nextIndex);
+        }
+
+        // this.newViewPortForEntity(this.focussedSprite as Asteroid);
     }
 }
 

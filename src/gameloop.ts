@@ -1,5 +1,6 @@
 import Player from './player.js';
 import App from './app.js';
+import Renderable from './ui/renderable.js';
 
 export class GameLoop {
     app: App;
@@ -64,28 +65,36 @@ export class GameLoop {
         this.app.viewPort.update(player);
         this.app.updateGame();
         // render stuff
+        Renderable.renderables.forEach(renderable => {
+            renderable.render();
+        })
         this.app.largeGameCanvas.draw(this.app);
         this.app.smallGameCanvas.draw(this.app);
-        this.app.infoPane.render();
+        // this.app.infoPane.render();
     }
 
     processInput() {
         let player = this.app.sprites[0] as Player;
         player.accelerating = false;
-        if (this.app.pressedKeys["ArrowLeft"]) {
+        let keyHandler = this.app.keyHandler;
+        if (keyHandler.pressedKeys["ArrowLeft"]) {
             player.direction -= player.rotationalAcceleration;
         }
-        if (this.app.pressedKeys["ArrowRight"]) {
+        if (keyHandler.pressedKeys["ArrowRight"]) {
             player.direction += player.rotationalAcceleration;
         }
+        if (keyHandler.pressedKeys["Tab"]) {
+            keyHandler.pressedKeys["Tab"] = false;
+            this.app.cycleProximateObjects();
+        }
 
-        if (this.app.pressedKeys["ArrowUp"]) {
+        if (keyHandler.pressedKeys["ArrowUp"]) {
             if (player.lockedAsteroid !== null) {
                 this.app.detachBody();
             }
             player.accelerate();
         }
-        if (this.app.pressedKeys["ArrowDown"]) {
+        if (keyHandler.pressedKeys["ArrowDown"]) {
             player.dx = 0;
             player.dy = 0;
         }

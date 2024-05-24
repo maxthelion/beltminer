@@ -5,24 +5,6 @@ import App from '../app.js';
 import { GameCanvas } from './gamecanvas.js';
 import { Sprite } from '../sprites.js';
 
-class FakeAsteroid {
-    x: number;
-    y: number;
-    radius: number;
-    color: string;
-    rotation: number;
-    asteroidPoints: { x: number; y: number; }[];
-    constructor(asteroid: Asteroid) {
-        this.x =  asteroid.distanceFromCenter;
-        this.y = (asteroid.angle % (Math.PI * 2)) * 100;
-        this.radius = asteroid.radius;
-        this.color = asteroid.color;
-        this.rotation = asteroid.rotation;
-        this.asteroidPoints = asteroid.asteroidPoints;
-    }
-
-}
-
 export class LargeGameCanvas extends GameCanvas {
     spriteSheet: HTMLImageElement;
     constructor(app: App, width: number, spriteSheet: HTMLImageElement) {
@@ -33,34 +15,13 @@ export class LargeGameCanvas extends GameCanvas {
         this.ctx = this.canvas.getContext('2d') as CanvasRenderingContext2D;
     }
 
-    setWidth(width: number) {
-        this.width = width;
-        this.canvas.width = width;
-        this.canvas.setAttribute('width', width.toString());
-    }
 
-    set width(width: number) {
-        this.canvas.width = width;
-    }
-    set height(height: number) {
-        this.canvas.height = height;
-    }
-
-    get width() {
-        return this.canvas.width;
-    }
-    get height() {
-        return this.canvas.height;
-    }
 
     draw(app: App) {
         this.ctx.clearRect(0, 0, this.width, this.height);
         // this.ctx.fillStyle = "rgba(0, 0, 0, 0.01)"
         //this.ctx.fillRect(0, 0, this.width, this.height);
-        this.centerOnPlayer(app.sprites[0] as Player);
-    }
-
-    centerOnPlayer(player: Player) {
+        let player = this.app.sprites[0] as Player;
         this.ctx.beginPath();
         this.app.asteroids.forEach(asteroid => {
             if (this.app.viewPort.containsEntity(asteroid) === false) return;
@@ -73,7 +34,27 @@ export class LargeGameCanvas extends GameCanvas {
         if (player.lockedAsteroid) {
             this.drawLockedAsteroid(player.lockedAsteroid, player);
         }
+        if (this.app.focussedSprite !== undefined) {
+            this.drawFocussedSprite(this.app.focussedSprite, player);
+        }
         this.drawPlayer(player);
+    }
+
+    drawFocussedSprite(sprite: Sprite, player: Player) {
+        this.ctx.beginPath();
+        this.centerOnSpriteAndDraw(sprite as Asteroid, player, (spritetorender) => { 
+            let asteroid = spritetorender as Asteroid;
+            this.ctx.strokeStyle = 'cyan';
+            this.ctx.lineWidth = 2;
+            let w = asteroid.radius * 4;
+            let h = asteroid.radius * 4;
+            this.ctx.strokeRect(    
+                this.scaleFactorX(-w / 2),
+                this.scaleFactorY(-h / 2),
+                this.scaleFactorX(w),
+                this.scaleFactorY(h)
+            );
+        });   
     }
 
 
@@ -85,13 +66,23 @@ export class LargeGameCanvas extends GameCanvas {
 
     drawNormalAsteroid(asteroid: Asteroid, player: Player) {
         this.ctx.strokeStyle = 'white';
-        this.ctx.lineWidth = 5;
+        this.ctx.lineWidth = 3;
         this.drawAsteroid(asteroid, player);
     }
 
     centerOnSpriteAndDraw(asteroid: Asteroid, player: Player, drawFunction: (sprite: Sprite) => void) {
         this.ctx.beginPath();
         this.ctx.fillStyle = asteroid.color;
+        if(this.app.focussedSprite?.uuid === asteroid.uuid) {
+            this.ctx.fillStyle = 'red';
+            this.ctx.strokeStyle = 'cyan';
+            this.ctx.lineWidth = 2;
+
+            // console.log(asteroid.uuid)
+        } else {
+            this.ctx.strokeStyle = 'white';
+            this.ctx.lineWidth = 1;
+        }
         // console.log(asteroid.color)
         let relativeX = this.app.viewPort.relativeX(asteroid) / this.app.viewPort.radialWidth;
         let relativeY = this.app.viewPort.relativeY(asteroid) / this.app.viewPort.arcLength;
@@ -194,11 +185,11 @@ export class LargeGameCanvas extends GameCanvas {
         return y * this.scaleFactor();
     }
 
-    gtlx(x: number) {
-        return this.scaleFactorX(x - this.app.viewPort.x);
-    }
+    // gtlx(x: number) {
+    //     return this.scaleFactorX(x - this.app.viewPort.x);
+    // }
 
-    gtly(y: number) {
-        return this.scaleFactorY(y - this.app.viewPort.y);
-    }
+    // gtly(y: number) {
+    //     return this.scaleFactorY(y - this.app.viewPort.y);
+    // }
 }

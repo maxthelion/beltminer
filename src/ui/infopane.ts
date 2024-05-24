@@ -12,19 +12,18 @@ export default class InfoPane extends Renderable {
     }
 
     render() {
-        if (this.cachedObjectID !== this.app.player.lockedAsteroid?.uuid){
-            if (this.app.player.isLocked()) {
-                this.el.innerHTML = `<h1>Locked object </h1>`;
-                this.asteroidPane = new AsteroidStatPane(this.app, this.app.player.lockedAsteroid!);
-                this.el.appendChild(this.asteroidPane.el);
-                this.cachedObjectID = this.app.player.lockedAsteroid!.uuid;
-            } else {
-                this.el.innerHTML = `
-                <h1>Info</h1>
-                <p>Use the arrow keys to move the ship.</p>
-                <p>Press space to lock onto an asteroid.</p>
-                <p>Press space again to unlock.</p>`;
-            }
+        if (!this.app.player.isLocked() && this.cachedObjectID !== null) {
+            this.el.innerHTML = `
+            <h1>Info</h1>
+            <p>Use the arrow keys to move the ship.</p>
+            <p>Press space to lock onto an asteroid.</p>
+            <p>Press space again to unlock.</p>`;
+            this.cachedObjectID = null;
+        } else if (this.app.player.isLocked() && this.cachedObjectID !== this.app.player.lockedAsteroid?.uuid){
+            this.el.innerHTML = `<h1>Locked object </h1>`;
+            this.asteroidPane = new AsteroidStatPane(this.app, this.app.player.lockedAsteroid!);
+            this.el.appendChild(this.asteroidPane.el);
+            this.cachedObjectID = this.app.player.lockedAsteroid!.uuid;
         }
     }
 }

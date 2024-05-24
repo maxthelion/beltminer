@@ -35,6 +35,8 @@ var ActionsBar = /** @class */ (function (_super) {
             }).el);
         });
     };
+    ActionsBar.prototype.render = function () {
+    };
     return ActionsBar;
 }(Renderable));
 export default ActionsBar;
@@ -47,5 +49,7 @@ var Button = /** @class */ (function (_super) {
         _this.el.onclick = callback;
         return _this;
     }
+    Button.prototype.render = function () {
+    };
     return Button;
 }(Renderable));

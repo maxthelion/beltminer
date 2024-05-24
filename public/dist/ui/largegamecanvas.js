@@ -14,17 +14,6 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 import { GameCanvas } from './gamecanvas.js';
-var FakeAsteroid = /** @class */ (function () {
-    function FakeAsteroid(asteroid) {
-        this.x = asteroid.distanceFromCenter;
-        this.y = (asteroid.angle % (Math.PI * 2)) * 100;
-        this.radius = asteroid.radius;
-        this.color = asteroid.color;
-        this.rotation = asteroid.rotation;
-        this.asteroidPoints = asteroid.asteroidPoints;
-    }
-    return FakeAsteroid;
-}());
 var LargeGameCanvas = /** @class */ (function (_super) {
     __extends(LargeGameCanvas, _super);
     function LargeGameCanvas(app, width, spriteSheet) {
@@ -35,39 +24,12 @@ var LargeGameCanvas = /** @class */ (function (_super) {
         _this.ctx = _this.canvas.getContext('2d');
         return _this;
     }
-    LargeGameCanvas.prototype.setWidth = function (width) {
-        this.width = width;
-        this.canvas.width = width;
-        this.canvas.setAttribute('width', width.toString());
-    };
-    Object.defineProperty(LargeGameCanvas.prototype, "width", {
-        get: function () {
-            return this.canvas.width;
-        },
-        set: function (width) {
-            this.canvas.width = width;
-        },
-        enumerable: false,
-        configurable: true
-    });
-    Object.defineProperty(LargeGameCanvas.prototype, "height", {
-        get: function () {
-            return this.canvas.height;
-        },
-        set: function (height) {
-            this.canvas.height = height;
-        },
-        enumerable: false,
-        configurable: true
-    });
     LargeGameCanvas.prototype.draw = function (app) {
+        var _this = this;
         this.ctx.clearRect(0, 0, this.width, this.height);
         // this.ctx.fillStyle = "rgba(0, 0, 0, 0.01)"
         //this.ctx.fillRect(0, 0, this.width, this.height);
-        this.centerOnPlayer(app.sprites[0]);
-    };
-    LargeGameCanvas.prototype.centerOnPlayer = function (player) {
-        var _this = this;
+        var player = this.app.sprites[0];
         this.ctx.beginPath();
         this.app.asteroids.forEach(function (asteroid) {
             if (_this.app.viewPort.containsEntity(asteroid) === false)
@@ -82,7 +44,22 @@ var LargeGameCanvas = /** @class */ (function (_super) {
         if (player.lockedAsteroid) {
             this.drawLockedAsteroid(player.lockedAsteroid, player);
         }
+        if (this.app.focussedSprite !== undefined) {
+            this.drawFocussedSprite(this.app.focussedSprite, player);
+        }
         this.drawPlayer(player);
+    };
+    LargeGameCanvas.prototype.drawFocussedSprite = function (sprite, player) {
+        var _this = this;
+        this.ctx.beginPath();
+        this.centerOnSpriteAndDraw(sprite, player, function (spritetorender) {
+            var asteroid = spritetorender;
+            _this.ctx.strokeStyle = 'cyan';
+            _this.ctx.lineWidth = 2;
+            var w = asteroid.radius * 4;
+            var h = asteroid.radius * 4;
+            _this.ctx.strokeRect(_this.scaleFactorX(-w / 2), _this.scaleFactorY(-h / 2), _this.scaleFactorX(w), _this.scaleFactorY(h));
+        });
     };
     LargeGameCanvas.prototype.drawLockedAsteroid = function (asteroid, player) {
         this.ctx.strokeStyle = 'red';
@@ -91,12 +68,23 @@ var LargeGameCanvas = /** @class */ (function (_super) {
     };
     LargeGameCanvas.prototype.drawNormalAsteroid = function (asteroid, player) {
         this.ctx.strokeStyle = 'white';
-        this.ctx.lineWidth = 5;
+        this.ctx.lineWidth = 3;
         this.drawAsteroid(asteroid, player);
     };
     LargeGameCanvas.prototype.centerOnSpriteAndDraw = function (asteroid, player, drawFunction) {
+        var _a;
         this.ctx.beginPath();
         this.ctx.fillStyle = asteroid.color;
+        if (((_a = this.app.focussedSprite) === null || _a === void 0 ? void 0 : _a.uuid) === asteroid.uuid) {
+            this.ctx.fillStyle = 'red';
+            this.ctx.strokeStyle = 'cyan';
+            this.ctx.lineWidth = 2;
+            // console.log(asteroid.uuid)
+        }
+        else {
+            this.ctx.strokeStyle = 'white';
+            this.ctx.lineWidth = 1;
+        }
         // console.log(asteroid.color)
         var relativeX = this.app.viewPort.relativeX(asteroid) / this.app.viewPort.radialWidth;
         var relativeY = this.app.viewPort.relativeY(asteroid) / this.app.viewPort.arcLength;
@@ -183,12 +171,6 @@ var LargeGameCanvas = /** @class */ (function (_super) {
     };
     LargeGameCanvas.prototype.scaleFactorY = function (y) {
         return y * this.scaleFactor();
-    };
-    LargeGameCanvas.prototype.gtlx = function (x) {
-        return this.scaleFactorX(x - this.app.viewPort.x);
-    };
-    LargeGameCanvas.prototype.gtly = function (y) {
-        return this.scaleFactorY(y - this.app.viewPort.y);
     };
     return LargeGameCanvas;
 }(GameCanvas));

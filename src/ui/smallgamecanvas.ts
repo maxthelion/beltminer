@@ -16,10 +16,10 @@ export class SmallGameCanvas extends GameCanvas {
     ctx2: CanvasRenderingContext2D;
 
     outputCanvas: HTMLCanvasElement;
-    zoom = 0.2;
+    zoom = 1;
 
-    constructor(app: App) {
-        super(app);
+    constructor(app: App, width: number) {
+        super(app, width);
         this.canvas = document.getElementById('canvas') as HTMLCanvasElement;
         this.ctx = this.canvas.getContext('2d') as CanvasRenderingContext2D;
         this.maskCanvas = document.createElement('canvas');
@@ -40,14 +40,26 @@ export class SmallGameCanvas extends GameCanvas {
                 this.zoom = 1;
             }
             this.draw(app);
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
         });
+    }
+
+    setDimensions(width: number, height: number) {
+        console.log('setting dimensions SmallGameCanvas', width, height);
+        super.setDimensions(width, height);
+        this.maskCanvas.height = height;
+        this.maskCanvas.width = width;
     }
 
     draw(app: App) {
         this.ctx.clearRect(0, 0, this.width, this.height);
         // this.ctx.fillStyle = "rgba(0, 0, 0, 0.01)"
         // this.ctx.fillRect(0, 0, this.width, this.height);
-        
+        // this.ctx.fillStyle = 'rgb(0, 0, 180)';
+        // this.ctx.fillRect(0,0, this.width, this.height);
+        this.ctx.resetTransform();
         app.asteroids.forEach(asteroid => {
             this.drawSprite(asteroid);
         });
@@ -56,11 +68,11 @@ export class SmallGameCanvas extends GameCanvas {
         });
         this.drawPlayer(app.sprites[0] as Player);
         // fill as light blue
-        // this.ctx.fillStyle = 'rgb(0, 0, 180)';
-        // this.ctx.fillRect(0,0, this.width, this.height);
+
         
         this.ctx.resetTransform();
-        this.drawSubSectors();
+        // this.applySubSectorMask();
+        this.drawCurrentSectors();
         this.ctx.resetTransform();
 
         this.drawViewPort();
@@ -72,6 +84,52 @@ export class SmallGameCanvas extends GameCanvas {
         this.drawSector();
         this.drawBeltLimits();
         this.drawSystemCenter();
+        this.ctx.resetTransform();
+        this.drawFocussedSprite();
+    }
+
+    drawFocussedSprite() {
+        let sprite = this.app.focussedSprite as Asteroid;
+        if (sprite === undefined) {
+            return;
+        }
+        this.ctx.beginPath();
+        this.resetCanvasOnPlayer();
+        // this.ctx.beginPath();
+        this.ctx.fillStyle = "transparent";
+        this.ctx.strokeStyle = 'yellow';
+        // this.ctx.fillRect(
+        //     this.gtlx(sprite.x),
+        //     this.gtly(sprite.y),
+        //     Math.ceil(this.scaleFactorX(sprite.radius)) * 2,
+        //     Math.ceil(this.scaleFactorY(sprite.radius)) * 2
+        // );
+        
+        this.ctx.arc(
+            this.gtlx(sprite.x),
+            this.gtly(sprite.y),
+            Math.round(this.scaleFactorX(sprite.radius)) + 3,
+            0,
+            Math.PI * 2
+        );
+        this.ctx.stroke();
+        this.ctx.fill();
+        this.ctx.closePath();
+        this.ctx.resetTransform();
+        let subSector = sprite.subSector;
+        this.ctx.fillStyle = "transparent";
+        this.drawPie(subSector.minAngle, subSector.maxAngle, this.scaleFactorX(subSector.minRadius), this.scaleFactorX(subSector.maxRadius), 'rgba(255, 255, 255, 0.5)');
+    }
+
+    drawCurrentSectors() {
+        let subsectors = this.app.getSubSectors();
+        subsectors.forEach(subSector => {
+            let firstAngle = subSector.minAngle;
+            let lastAngle = subSector.maxAngle;
+            let outerRadius = this.scaleFactorX( subSector.minRadius ) ;
+            let innerRadius = this.scaleFactorX( subSector.maxRadius ) ;
+            this.drawPie(firstAngle, lastAngle, innerRadius, outerRadius, 'rgb(255, 255, 255)');
+        })
     }
 
     drawSystemCenter() {
@@ -89,7 +147,7 @@ export class SmallGameCanvas extends GameCanvas {
         this.ctx.closePath();
     }
 
-    drawSubSectors() {
+    applySubSectorMask() {
         if (this.app.newSubSectors.length > 0) {
             // this.ctx2.clearRect(0, 0, this.width, this.height);
             this.app.newSubSectors.forEach(subSector => {
@@ -287,9 +345,12 @@ export class SmallGameCanvas extends GameCanvas {
     //     this.ctx.closePath();
     // }
 
-    drawSprite(sprite: Asteroid) {
+    resetCanvasOnPlayer() {
         this.ctx.translate(this.xOffset(), this.yOffset());
         this.ctx.rotate(-this.app.player.angle + Math.PI);
+    }
+    drawSprite(sprite: Asteroid) {
+        this.resetCanvasOnPlayer();
         // this.ctx.beginPath();
         this.ctx.fillStyle = sprite.color;
 

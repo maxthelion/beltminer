@@ -20,6 +20,10 @@ export default class ActionsBar extends Renderable{
             }).el);
         });
     }
+
+    render(): void {
+        
+    }
 }
 
 class Button extends Renderable {
@@ -28,5 +32,8 @@ class Button extends Renderable {
         this.el = document.createElement('button');
         this.el.textContent = text;
         this.el.onclick = callback;
+    }
+    render(): void {
+        
     }
 }

@@ -13,8 +13,10 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
+import { Sector, SubSector } from './sectors.js';
 import AsteroidRenderer from './asteroidrenderer.js';
 import { Sprite } from './sprites.js';
+import SolarSystem from './solarsystem.js';
 var Asteroid = /** @class */ (function (_super) {
     __extends(Asteroid, _super);
     function Asteroid(system, sector) {
@@ -23,13 +25,14 @@ var Asteroid = /** @class */ (function (_super) {
         _this.speed = 0.1; // Speed of rotation
         _this.color = 'white';
         _this.mass = 1;
-        var totalSectors = 10;
         // color generated based on sector
         _this.color = "hsl(".concat((sector.percentage) * 360, ", 100%, 50%)");
         _this.radius = Math.random() + 0.02;
         _this.mass = _this.radius * 0.0005;
         // angle based on sector
         _this.angle = Math.random() * (sector.maxAngle - sector.minAngle) + sector.minAngle;
+        // let sectorArcWidth = sector.maxAngle - sector.minAngle;
+        _this.sector = sector;
         // this.angle = Math.random() * Math.PI * 2;
         _this.cx = system.centerX;
         _this.cy = system.centerY;
@@ -39,8 +42,27 @@ var Asteroid = /** @class */ (function (_super) {
         _this.asteroidPoints = AsteroidRenderer.generateAsteroidShape(10, _this.radius);
         _this.rotation = Math.random() * Math.PI * 2;
         _this.rotationSpeed = Math.random() * 0.001 + 0.002;
+        // initialize distance from center
+        _this.update();
+        _this.assignToSubSector();
         return _this;
     }
+    Asteroid.prototype.assignToSubSector = function () {
+        var _a, _b;
+        var subSectors = SubSector.subSectorNum;
+        var sectorSize = (2 * Math.PI) / (Sector.sectorNum * subSectors);
+        var subSectorArcIndex = Math.floor(this.angle / sectorSize);
+        var minRadius = SolarSystem.minRadius;
+        var maxRadius = SolarSystem.maxRadius;
+        var radialRange = maxRadius - minRadius;
+        var radialSectorNum = SubSector.radialDivisions;
+        var subSectorRadialIndex = Math.floor((this.distanceFromCenter - minRadius) / radialRange * radialSectorNum);
+        // console.log(subSectorRadialIndex, subSectorArcIndex)
+        this.subSector = new SubSector(subSectorArcIndex, subSectorRadialIndex);
+        (_a = this.sector.subSectorsAsteroids)[subSectorArcIndex] || (_a[subSectorArcIndex] = []);
+        (_b = this.sector.subSectorsAsteroids[subSectorArcIndex])[subSectorRadialIndex] || (_b[subSectorRadialIndex] = []);
+        this.sector.subSectorsAsteroids[subSectorArcIndex][subSectorRadialIndex].push(this);
+    };
     Asteroid.prototype.update = function () {
         this.rotation += this.rotationSpeed;
         this.x = this.cx + this.a * Math.cos(this.angle);
@@ -48,6 +70,9 @@ var Asteroid = /** @class */ (function (_super) {
         this.angle += this.speed;
         this.angle %= Math.PI * 2;
         this.distanceFromCenter = Math.sqrt(Math.pow(this.x - this.cx, 2) + Math.pow(this.y - this.cy, 2));
+        this.setSubSector();
+    };
+    Asteroid.prototype.setSubSector = function () {
     };
     return Asteroid;
 }(Sprite));

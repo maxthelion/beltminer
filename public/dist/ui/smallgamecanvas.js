@@ -16,15 +16,15 @@ var __extends = (this && this.__extends) || (function () {
 import { GameCanvas } from './gamecanvas.js';
 var SmallGameCanvas = /** @class */ (function (_super) {
     __extends(SmallGameCanvas, _super);
-    function SmallGameCanvas(app) {
-        var _this = _super.call(this, app) || this;
+    function SmallGameCanvas(app, width) {
+        var _this = _super.call(this, app, width) || this;
         _this.viewPort = {
             x: 0,
             y: 0,
             width: 10,
             height: 10
         };
-        _this.zoom = 0.2;
+        _this.zoom = 1;
         _this.maxZoomMultiplier = 1.5;
         _this.canvas = document.getElementById('canvas');
         _this.ctx = _this.canvas.getContext('2d');
@@ -47,14 +47,26 @@ var SmallGameCanvas = /** @class */ (function (_super) {
                 _this.zoom = 1;
             }
             _this.draw(app);
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
         });
         return _this;
     }
+    SmallGameCanvas.prototype.setDimensions = function (width, height) {
+        console.log('setting dimensions SmallGameCanvas', width, height);
+        _super.prototype.setDimensions.call(this, width, height);
+        this.maskCanvas.height = height;
+        this.maskCanvas.width = width;
+    };
     SmallGameCanvas.prototype.draw = function (app) {
         var _this = this;
         this.ctx.clearRect(0, 0, this.width, this.height);
         // this.ctx.fillStyle = "rgba(0, 0, 0, 0.01)"
         // this.ctx.fillRect(0, 0, this.width, this.height);
+        // this.ctx.fillStyle = 'rgb(0, 0, 180)';
+        // this.ctx.fillRect(0,0, this.width, this.height);
+        this.ctx.resetTransform();
         app.asteroids.forEach(function (asteroid) {
             _this.drawSprite(asteroid);
         });
@@ -63,10 +75,9 @@ var SmallGameCanvas = /** @class */ (function (_super) {
         });
         this.drawPlayer(app.sprites[0]);
         // fill as light blue
-        // this.ctx.fillStyle = 'rgb(0, 0, 180)';
-        // this.ctx.fillRect(0,0, this.width, this.height);
         this.ctx.resetTransform();
-        this.drawSubSectors();
+        // this.applySubSectorMask();
+        this.drawCurrentSectors();
         this.ctx.resetTransform();
         this.drawViewPort();
         this.ctx.resetTransform();
@@ -76,6 +87,44 @@ var SmallGameCanvas = /** @class */ (function (_super) {
         this.drawSector();
         this.drawBeltLimits();
         this.drawSystemCenter();
+        this.ctx.resetTransform();
+        this.drawFocussedSprite();
+    };
+    SmallGameCanvas.prototype.drawFocussedSprite = function () {
+        var sprite = this.app.focussedSprite;
+        if (sprite === undefined) {
+            return;
+        }
+        this.ctx.beginPath();
+        this.resetCanvasOnPlayer();
+        // this.ctx.beginPath();
+        this.ctx.fillStyle = "transparent";
+        this.ctx.strokeStyle = 'yellow';
+        // this.ctx.fillRect(
+        //     this.gtlx(sprite.x),
+        //     this.gtly(sprite.y),
+        //     Math.ceil(this.scaleFactorX(sprite.radius)) * 2,
+        //     Math.ceil(this.scaleFactorY(sprite.radius)) * 2
+        // );
+        this.ctx.arc(this.gtlx(sprite.x), this.gtly(sprite.y), Math.round(this.scaleFactorX(sprite.radius)) + 3, 0, Math.PI * 2);
+        this.ctx.stroke();
+        this.ctx.fill();
+        this.ctx.closePath();
+        this.ctx.resetTransform();
+        var subSector = sprite.subSector;
+        this.ctx.fillStyle = "transparent";
+        this.drawPie(subSector.minAngle, subSector.maxAngle, this.scaleFactorX(subSector.minRadius), this.scaleFactorX(subSector.maxRadius), 'rgba(255, 255, 255, 0.5)');
+    };
+    SmallGameCanvas.prototype.drawCurrentSectors = function () {
+        var _this = this;
+        var subsectors = this.app.getSubSectors();
+        subsectors.forEach(function (subSector) {
+            var firstAngle = subSector.minAngle;
+            var lastAngle = subSector.maxAngle;
+            var outerRadius = _this.scaleFactorX(subSector.minRadius);
+            var innerRadius = _this.scaleFactorX(subSector.maxRadius);
+            _this.drawPie(firstAngle, lastAngle, innerRadius, outerRadius, 'rgb(255, 255, 255)');
+        });
     };
     SmallGameCanvas.prototype.drawSystemCenter = function () {
         this.ctx.resetTransform();
@@ -91,7 +140,7 @@ var SmallGameCanvas = /** @class */ (function (_super) {
         this.ctx.fill();
         this.ctx.closePath();
     };
-    SmallGameCanvas.prototype.drawSubSectors = function () {
+    SmallGameCanvas.prototype.applySubSectorMask = function () {
         var _this = this;
         if (this.app.newSubSectors.length > 0) {
             // this.ctx2.clearRect(0, 0, this.width, this.height);
@@ -226,9 +275,12 @@ var SmallGameCanvas = /** @class */ (function (_super) {
     //     this.ctx.fill();
     //     this.ctx.closePath();
     // }
-    SmallGameCanvas.prototype.drawSprite = function (sprite) {
+    SmallGameCanvas.prototype.resetCanvasOnPlayer = function () {
         this.ctx.translate(this.xOffset(), this.yOffset());
         this.ctx.rotate(-this.app.player.angle + Math.PI);
+    };
+    SmallGameCanvas.prototype.drawSprite = function (sprite) {
+        this.resetCanvasOnPlayer();
         // this.ctx.beginPath();
         this.ctx.fillStyle = sprite.color;
         this.ctx.fillRect(this.gtlx(sprite.x), this.gtly(sprite.y), Math.ceil(this.scaleFactorX(sprite.radius)) * 2, Math.ceil(this.scaleFactorY(sprite.radius)) * 2);

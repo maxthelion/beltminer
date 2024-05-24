@@ -1,3 +1,4 @@
+import Renderable from './ui/renderable.js';
 var GameLoop = /** @class */ (function () {
     function GameLoop(app) {
         this.app = app;
@@ -56,26 +57,34 @@ var GameLoop = /** @class */ (function () {
         this.app.viewPort.update(player);
         this.app.updateGame();
         // render stuff
+        Renderable.renderables.forEach(function (renderable) {
+            renderable.render();
+        });
         this.app.largeGameCanvas.draw(this.app);
         this.app.smallGameCanvas.draw(this.app);
-        this.app.infoPane.render();
+        // this.app.infoPane.render();
     };
     GameLoop.prototype.processInput = function () {
         var player = this.app.sprites[0];
         player.accelerating = false;
-        if (this.app.pressedKeys["ArrowLeft"]) {
+        var keyHandler = this.app.keyHandler;
+        if (keyHandler.pressedKeys["ArrowLeft"]) {
             player.direction -= player.rotationalAcceleration;
         }
-        if (this.app.pressedKeys["ArrowRight"]) {
+        if (keyHandler.pressedKeys["ArrowRight"]) {
             player.direction += player.rotationalAcceleration;
         }
-        if (this.app.pressedKeys["ArrowUp"]) {
+        if (keyHandler.pressedKeys["Tab"]) {
+            keyHandler.pressedKeys["Tab"] = false;
+            this.app.cycleProximateObjects();
+        }
+        if (keyHandler.pressedKeys["ArrowUp"]) {
             if (player.lockedAsteroid !== null) {
                 this.app.detachBody();
             }
             player.accelerate();
         }
-        if (this.app.pressedKeys["ArrowDown"]) {
+        if (keyHandler.pressedKeys["ArrowDown"]) {
             player.dx = 0;
             player.dy = 0;
         }
