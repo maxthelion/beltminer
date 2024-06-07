@@ -1,3 +1,4 @@
+import { GameCanvas } from "./ui/gamecanvas";
 
 
 export class Sprite {
@@ -22,6 +23,13 @@ export class Sprite {
     update() {
         this.x += this.dx;
         this.y += this.dy;
+    }
+
+    render(gamecanvas:GameCanvas) {
+        gamecanvas.ctx.beginPath();
+        gamecanvas.ctx.arc(this.x, this.y, 10, 0, Math.PI * 2);
+        gamecanvas.ctx.fill();
+        gamecanvas.ctx.stroke();
     }
 }
 

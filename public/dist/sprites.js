@@ -12,6 +12,12 @@ var Sprite = /** @class */ (function () {
         this.x += this.dx;
         this.y += this.dy;
     };
+    Sprite.prototype.render = function (gamecanvas) {
+        gamecanvas.ctx.beginPath();
+        gamecanvas.ctx.arc(this.x, this.y, 10, 0, Math.PI * 2);
+        gamecanvas.ctx.fill();
+        gamecanvas.ctx.stroke();
+    };
     return Sprite;
 }());
 export { Sprite };

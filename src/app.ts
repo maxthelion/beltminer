@@ -87,15 +87,7 @@ export default class App {
         for (let sectorNum = 0; sectorNum < numSectors; sectorNum++) {
             let sector = new Sector(sectorNum);
             this.sectors[sectorNum] = sector;
-            let density = 100 * (sectorNum + 1);
-            for (let i = 0; i < density; i++) {
-                let asteroid = new Asteroid(this.solarSystem, sector);
-                this.sectors[sectorNum].asteroids = this.sectors[sectorNum].asteroids || [];
-                this.sectors[sectorNum].asteroids.push(asteroid);
-
-
-            }
-            this.asteroids = this.asteroids.concat(this.sectors[sectorNum].asteroids);
+            sector.populate(this);
             //this.asteroids.push(new Asteroid(this.solarSystem, sectorNum));
         }
         this.actionsBar = new ActionsBar(this);
@@ -110,6 +102,11 @@ export default class App {
         this.gameLoop = new GameLoop(this);
         window.addEventListener("resize", this.resizeCanvasses.bind(this));
         this.keyHandler = new KeyHandler(this);
+    }
+
+    addAsteroid(asteroid: Asteroid) {
+        this.asteroids.push(asteroid);
+        this.sprites.push(asteroid);
     }
 
     resizeCanvasses() {

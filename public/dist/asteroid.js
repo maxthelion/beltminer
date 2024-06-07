@@ -74,6 +74,23 @@ var Asteroid = /** @class */ (function (_super) {
     };
     Asteroid.prototype.setSubSector = function () {
     };
+    Asteroid.prototype.render = function (gamecanvas) {
+        var sprite = this;
+        // this.ctx.beginPath();
+        var ctx = gamecanvas.ctx;
+        ctx.fillStyle = sprite.color;
+        // console.log(sprite.radius);
+        ctx.fillRect(gamecanvas.gtlx(sprite.x), gamecanvas.gtly(sprite.y), Math.ceil(gamecanvas.scaleFactorX(sprite.radius)) * 2, Math.ceil(gamecanvas.scaleFactorY(sprite.radius)) * 2);
+        // ctx.arc(
+        //     this.gtlx(asteroid.x),
+        //     this.gtly(asteroid.y),
+        //     Math.round(this.scaleFactorX(asteroid.radius)),
+        //     0,
+        //     Math.PI * 2
+        // );
+        ctx.fill();
+        ctx.closePath();
+    };
     return Asteroid;
 }(Sprite));
 export { Asteroid };

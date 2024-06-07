@@ -1,5 +1,4 @@
 import { Planetoid } from './planetoid.js';
-import { Asteroid } from './asteroid.js';
 import Player from './player.js';
 import { GameLoop } from './gameloop.js';
 import InfoPane from './ui/infopane.js';
@@ -61,13 +60,7 @@ var App = /** @class */ (function () {
         for (var sectorNum = 0; sectorNum < numSectors; sectorNum++) {
             var sector = new Sector(sectorNum);
             this.sectors[sectorNum] = sector;
-            var density = 100 * (sectorNum + 1);
-            for (var i = 0; i < density; i++) {
-                var asteroid = new Asteroid(this.solarSystem, sector);
-                this.sectors[sectorNum].asteroids = this.sectors[sectorNum].asteroids || [];
-                this.sectors[sectorNum].asteroids.push(asteroid);
-            }
-            this.asteroids = this.asteroids.concat(this.sectors[sectorNum].asteroids);
+            sector.populate(this);
             //this.asteroids.push(new Asteroid(this.solarSystem, sectorNum));
         }
         this.actionsBar = new ActionsBar(this);
@@ -83,6 +76,10 @@ var App = /** @class */ (function () {
         window.addEventListener("resize", this.resizeCanvasses.bind(this));
         this.keyHandler = new KeyHandler(this);
     }
+    App.prototype.addAsteroid = function (asteroid) {
+        this.asteroids.push(asteroid);
+        this.sprites.push(asteroid);
+    };
     App.prototype.resizeCanvasses = function () {
         var largeHolderEl = document.getElementById("largescreen");
         var largeHolderWidth = largeHolderEl.clientWidth;

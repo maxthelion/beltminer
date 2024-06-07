@@ -3,6 +3,7 @@ import { Asteroid } from '../asteroid.js';
 import Player from '../player.js';
 import { GameCanvas } from './gamecanvas.js';
 import App from '../app.js';
+import { Sprite } from '../sprites.js';
 
 export class SmallGameCanvas extends GameCanvas {
     viewPort = {
@@ -60,11 +61,13 @@ export class SmallGameCanvas extends GameCanvas {
         // this.ctx.fillStyle = 'rgb(0, 0, 180)';
         // this.ctx.fillRect(0,0, this.width, this.height);
         this.ctx.resetTransform();
-        app.asteroids.forEach(asteroid => {
-            this.drawSprite(asteroid);
-        });
-        app.planetoids.forEach(planetoid => {
-            this.drawSprite(planetoid);
+        app.sprites.forEach(sprite => {
+            // if the sprite is not of class Player don't render it now
+            if (sprite instanceof Player === true) {
+                return;
+            }
+            this.drawSprite(sprite);
+
         });
         this.drawPlayer(app.sprites[0] as Player);
         // fill as light blue
@@ -349,27 +352,9 @@ export class SmallGameCanvas extends GameCanvas {
         this.ctx.translate(this.xOffset(), this.yOffset());
         this.ctx.rotate(-this.app.player.angle + Math.PI);
     }
-    drawSprite(sprite: Asteroid) {
+    drawSprite(sprite: Sprite) {
         this.resetCanvasOnPlayer();
-        // this.ctx.beginPath();
-        this.ctx.fillStyle = sprite.color;
-
-        this.ctx.fillRect(
-            this.gtlx(sprite.x),
-            this.gtly(sprite.y),
-            Math.ceil(this.scaleFactorX(sprite.radius)) * 2,
-            Math.ceil(this.scaleFactorY(sprite.radius)) * 2
-        );
-        
-        // this.ctx.arc(
-        //     this.gtlx(asteroid.x),
-        //     this.gtly(asteroid.y),
-        //     Math.round(this.scaleFactorX(asteroid.radius)),
-        //     0,
-        //     Math.PI * 2
-        // );
-        this.ctx.fill();
-        this.ctx.closePath();
+        sprite.render(this);
         this.ctx.resetTransform();
     }
 

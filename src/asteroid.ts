@@ -2,6 +2,8 @@ import { Sector, SubSector } from './sectors.js';
 import AsteroidRenderer from './asteroidrenderer.js';
 import { Sprite } from './sprites.js';
 import SolarSystem  from './solarsystem.js';
+import { GameCanvas } from './ui/gamecanvas.js';
+import { SmallGameCanvas } from './ui/smallgamecanvas.js';
 
 export class Asteroid extends Sprite {
     radius: number;
@@ -76,4 +78,29 @@ export class Asteroid extends Sprite {
     setSubSector() {
         
     }
+
+    render(gamecanvas: SmallGameCanvas) {
+        let sprite = this;
+        // this.ctx.beginPath();
+        let ctx = gamecanvas.ctx;
+        ctx.fillStyle = sprite.color;
+        // console.log(sprite.radius);
+        ctx.fillRect(
+            gamecanvas.gtlx(sprite.x),
+            gamecanvas.gtly(sprite.y),
+            Math.ceil(gamecanvas.scaleFactorX(sprite.radius)) * 2,
+            Math.ceil(gamecanvas.scaleFactorY(sprite.radius)) * 2
+        );
+        
+        // ctx.arc(
+        //     this.gtlx(asteroid.x),
+        //     this.gtly(asteroid.y),
+        //     Math.round(this.scaleFactorX(asteroid.radius)),
+        //     0,
+        //     Math.PI * 2
+        // );
+        ctx.fill();
+        ctx.closePath();
+    }
+
 }

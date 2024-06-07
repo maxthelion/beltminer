@@ -73,3 +73,7 @@ body {
     color: white;
     grid-template-columns: 200px 1fr 200px;
 }
+
+#largebottom {
+    display: grid;
+}
