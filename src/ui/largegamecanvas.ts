@@ -42,6 +42,23 @@ export class LargeGameCanvas extends GameCanvas {
             this.drawFocussedSprite(this.app.focussedSprite, player);
         }
         this.drawPlayer(player);
+        this.drawSector();
+    }
+
+    drawSector() {
+        let sector = this.app.getSector();
+
+        let firstAngle =    this.scaleFactorY(sector.minAngle);
+        let lastAngle =     this.scaleFactorY(sector.maxAngle);
+        let outerRadius = this.scaleFactorX( this.app.solarSystem.minRadius ) ;
+        let innerRadius = this.scaleFactorX( this.app.solarSystem.maxRadius ) ;
+        this.ctx.beginPath();
+        this.ctx.moveTo(firstAngle, outerRadius);
+        this.ctx.lineTo(lastAngle, outerRadius);
+        this.ctx.lineTo(lastAngle, innerRadius);
+        this.ctx.lineTo(firstAngle, innerRadius);
+        this.ctx.stroke();
+        // console.log(firstAngle, lastAngle, outerRadius, innerRadius);
     }
 
     drawFocussedSprite(sprite: Sprite, player: Player) {

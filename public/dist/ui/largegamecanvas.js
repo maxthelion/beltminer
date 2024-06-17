@@ -52,6 +52,21 @@ var LargeGameCanvas = /** @class */ (function (_super) {
             this.drawFocussedSprite(this.app.focussedSprite, player);
         }
         this.drawPlayer(player);
+        this.drawSector();
+    };
+    LargeGameCanvas.prototype.drawSector = function () {
+        var sector = this.app.getSector();
+        var firstAngle = this.scaleFactorY(sector.minAngle);
+        var lastAngle = this.scaleFactorY(sector.maxAngle);
+        var outerRadius = this.scaleFactorX(this.app.solarSystem.minRadius);
+        var innerRadius = this.scaleFactorX(this.app.solarSystem.maxRadius);
+        this.ctx.beginPath();
+        this.ctx.moveTo(firstAngle, outerRadius);
+        this.ctx.lineTo(lastAngle, outerRadius);
+        this.ctx.lineTo(lastAngle, innerRadius);
+        this.ctx.lineTo(firstAngle, innerRadius);
+        this.ctx.stroke();
+        // console.log(firstAngle, lastAngle, outerRadius, innerRadius);
     };
     LargeGameCanvas.prototype.drawFocussedSprite = function (sprite, player) {
         var _this = this;

@@ -37,7 +37,7 @@ export default class EntityViewer extends Renderable {
                 let maxRadius = 100;
                 let scaleFactor =  sprite.radius;
                 ctx.arc(canvas.width/2, canvas.height/2, (canvas.height / 2) * scaleFactor, 0, 2 * Math.PI);
-                ctx.fillStyle = 'red';
+                ctx.fillStyle = sprite.color;
                 ctx.fill();
                 ctx.stroke();
             } else {

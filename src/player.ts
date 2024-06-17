@@ -48,8 +48,9 @@ export default class Player extends Sprite {
             
             let systemCircumference = 
                 Math.PI * 2 * this.system.midRadius();
-
-            this.angle -= (this.dy / systemCircumference);
+            this.y -= this.dy;
+            // console.log(this.y);
+            this.angle = (this.y / systemCircumference) * Math.PI * 2;
             // if the angle is less that 0, add 2pi to it
             if (this.angle < 0) {
                 this.angle += Math.PI * 2;
@@ -61,7 +62,7 @@ export default class Player extends Sprite {
             let oldX = this.x;
             let oldY = this.y;
             this.x = this.distanceFromCenter * Math.cos(this.angle);
-            this.y = this.distanceFromCenter * Math.sin(this.angle);
+            // this.y = this.distanceFromCenter * Math.sin(this.angle);
             this.velocity = Math.sqrt(Math.pow(this.x - oldX, 2) + Math.pow(this.y - oldY, 2));
         }
     }
