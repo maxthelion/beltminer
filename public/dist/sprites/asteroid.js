@@ -13,14 +13,14 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-import { Sector, SubSector } from './sectors.js';
-import AsteroidRenderer from './asteroidrenderer.js';
-import { Sprite } from './sprites/sprites.js';
-import SolarSystem from './solarsystem.js';
+import { Sector, SubSector } from '../sectors.js';
+import AsteroidRenderer from '../asteroidrenderer.js';
+import { Sprite } from './sprites.js';
+import SolarSystem from '../solarsystem.js';
 var Asteroid = /** @class */ (function (_super) {
     __extends(Asteroid, _super);
-    function Asteroid(system, sector) {
-        var _this = _super.call(this) || this;
+    function Asteroid(app, system, sector) {
+        var _this = _super.call(this, app) || this;
         _this.angle = 0; // Initial angle
         _this.speed = 0.1; // Speed of rotation
         _this.color = 'white';

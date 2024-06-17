@@ -24,6 +24,9 @@ var GameLoop = /** @class */ (function () {
         this.app.planetoids.forEach(function (sprite) {
             sprite.update();
         });
+        this.app.actors.forEach(function (sprite) {
+            sprite.update();
+        });
         var proximityAsteroids = this.app.proximateAsteroids();
         // console.log(proximityAsteroids.length)
         var player = this.app.sprites[0];
@@ -62,6 +65,7 @@ var GameLoop = /** @class */ (function () {
         });
         this.app.largeGameCanvas.draw(this.app);
         this.app.smallGameCanvas.draw(this.app);
+        this.app.longGameCanvas.draw(this.app);
         // this.app.infoPane.render();
     };
     GameLoop.prototype.processInput = function () {

@@ -1,0 +1,59 @@
+import { Planetoid } from '../sprites/planetoid.js';
+import { Asteroid } from '../sprites/asteroid.js';
+import Player from '../player.js';
+import { GameCanvas } from './gamecanvas.js';
+import App from '../app.js';
+import { Sprite } from '../sprites/sprites.js';
+import SolarSystem from '../solarsystem.js';
+
+export class LongGameCanvas extends GameCanvas {
+    constructor(app: App, width: number) {
+        super(app, width);
+        this.canvas = document.getElementById('longcanvas') as HTMLCanvasElement;
+        this.canvas.width = 100;
+        this.canvas.height = 500;
+        this.ctx = this.canvas.getContext('2d') as CanvasRenderingContext2D;
+    }
+
+    draw(app: App) {
+        this.ctx.clearRect(0, 0, this.width, this.height);
+        let sprite = this.app.sprites[0] as Player;
+        // console.log((sprite.angle / (Math.PI * 2)) * this.app.solarSystem.midRadius());
+        // console.log('drawing long canvas',sprite.distanceFromCenter,sprite.angle);
+        let y = this.radiansToDeimmal(sprite.angle);
+        console.log(y, sprite.angle, this.scaleY(y));
+
+        this.app.sprites.forEach(sprite => {
+            // console.log(sprite.distanceFromCenter,sprite.angle)
+            this.drawSprite(sprite);
+        });
+        this.drawSprite(sprite, 'red');
+    }
+
+    drawSprite(sprite: Sprite, color: string = 'white') {
+        this.ctx.beginPath();
+        let x = sprite.relativeX();
+        let y = this.radiansToDeimmal(sprite.angle);
+        this.ctx.fillStyle = sprite.color || color;
+        this.ctx.fillRect(
+            this.scaleX(x),
+            this.scaleY(y),
+            1,
+            1
+        );
+        // this.ctx.fill();
+        this.ctx.closePath();
+    }
+
+    radiansToDeimmal(radians: number) {
+        return (radians / (Math.PI * 2));
+    }
+
+    scaleX(x: number) {
+        return this.width / x;
+    }
+
+    scaleY(y: number) {
+        return this.height / y;
+    }
+}

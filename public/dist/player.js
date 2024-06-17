@@ -13,21 +13,22 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-import { Sprite } from './sprites.js';
+import { Sprite } from './sprites/sprites.js';
 var Player = /** @class */ (function (_super) {
     __extends(Player, _super);
-    function Player(system) {
-        var _this = _super.call(this) || this;
+    function Player(app, system) {
+        var _this = _super.call(this, app) || this;
         _this.slowAcceleration = 0.0001;
         _this.fastAcceleration = 0.01;
         _this.acceleration = _this.fastAcceleration;
         _this.rotationalAcceleration = 0.05;
         _this.color = 'grey';
         _this.accelerating = false;
+        _this.system = system;
         _this.x = 0;
         _this.y = 0;
         _this.angle = 0;
-        _this.distanceFromCenter = system.minRadius + ((system.maxRadius - system.minRadius) / 2);
+        _this.distanceFromCenter = system.midRadius();
         _this.cx = 0;
         _this.cy = 0;
         _this.direction = Math.random() * Math.PI * 2;
@@ -43,9 +44,15 @@ var Player = /** @class */ (function (_super) {
             this.distanceFromCenter = this.lockedAsteroid.distanceFromCenter;
         }
         else {
-            // if near an asteroid, lock to its speed and direction
-            this.angle -= this.dy / 1000;
-            this.angle %= Math.PI * 2;
+            var systemCircumference = Math.PI * 2 * this.system.midRadius();
+            this.angle -= (this.dy / systemCircumference);
+            // if the angle is less that 0, add 2pi to it
+            if (this.angle < 0) {
+                this.angle += Math.PI * 2;
+            }
+            else if (this.angle > Math.PI * 2) {
+                this.angle -= Math.PI * 2;
+            }
             this.distanceFromCenter -= (this.dx);
             //let radius = 200;
             var oldX = this.x;

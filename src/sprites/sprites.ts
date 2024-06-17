@@ -1,4 +1,5 @@
-import { GameCanvas } from "./ui/gamecanvas";
+import App from "../app";
+import { GameCanvas } from "../ui/gamecanvas";
 
 
 export class Sprite {
@@ -9,8 +10,10 @@ export class Sprite {
     uuid: string;
     angle: number;
     distanceFromCenter: number;
+    app: App;
 
-    constructor() {
+    constructor(app: App) {
+        this.app = app;
         this.uuid = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
         this.x = 50;
         this.y = 50;
@@ -30,6 +33,12 @@ export class Sprite {
         gamecanvas.ctx.arc(this.x, this.y, 10, 0, Math.PI * 2);
         gamecanvas.ctx.fill();
         gamecanvas.ctx.stroke();
+    }
+
+    relativeX() {
+        let min = this.app.solarSystem.minRadius;
+        let max = this.app.solarSystem.maxRadius;
+        return (this.distanceFromCenter - min) / (max - min);
     }
 }
 

@@ -1,6 +1,6 @@
-import { Sprite } from './sprites.js';
-import { Planetoid } from './planetoid.js';
-import { Asteroid } from './asteroid.js';
+import { Sprite } from './sprites/sprites.js';
+import { Planetoid } from './sprites/planetoid.js';
+import { Asteroid } from './sprites/asteroid.js';
 import Player from './player.js';
 import { GameLoop } from './gameloop.js';
 import InfoPane from './ui/infopane.js';
@@ -13,6 +13,8 @@ import { Sector, SubSector } from './sectors.js';
 import SolarSystem from './solarsystem.js';
 import KeyHandler from './keyhandler.js';
 import EntityViewer from './ui/entityviewer.js';
+import { Actor } from './sprites/actor.js';
+import { LongGameCanvas } from './ui/longgamecanvas.js';
 
 class ViewPort {
     x: number;
@@ -32,6 +34,7 @@ export default class App {
     sprites: Sprite[];
     asteroids: Asteroid[];
     planetoids: Planetoid[];
+    actors: Actor[] = [];
     smallGameCanvas: SmallGameCanvas;
     largeGameCanvas: LargeGameCanvas;
     zoomLevel = 100;
@@ -59,6 +62,7 @@ export default class App {
     currentSubSector: SubSector = new SubSector(0, 0);
     newSubSectors: SubSector[] = [];
     focussedSprite: Sprite | undefined;
+    longGameCanvas: LongGameCanvas;
 
     constructor(spriteSheet: HTMLImageElement) {
         this.spriteSheet = spriteSheet;
@@ -67,15 +71,15 @@ export default class App {
         this.viewPort = this.defaultViewPort;
         this.sprites = [];
 
-        this.player = new Player(this.solarSystem);
+        this.player = new Player(this, this.solarSystem);
         this.sprites.push(this.player);
         this.planetoids = [ ];
-        let ceres = new Planetoid(this.solarSystem, "Ceres");
+        let ceres = new Planetoid(this, this.solarSystem, "Ceres");
         this.sprites.push(ceres);
         this.planetoids.push(ceres);
 
         for (let i = 0; i < 10; i++) {
-            let otherThing = new Planetoid(this.solarSystem, "Ceres");
+            let otherThing = new Planetoid(this, this.solarSystem, "Ceres");
             this.sprites.push(otherThing);
             this.planetoids.push(otherThing);
         }
@@ -90,6 +94,7 @@ export default class App {
             sector.populate(this);
             //this.asteroids.push(new Asteroid(this.solarSystem, sectorNum));
         }
+        this.spawnMobs();
         this.actionsBar = new ActionsBar(this);
         this.infoPane = new InfoPane(this);
         this.entityViewer = new EntityViewer(this);
@@ -98,6 +103,7 @@ export default class App {
         // console.log(smallHolderWidth)
         this.smallGameCanvas = new SmallGameCanvas(this, smallHolderWidth!);
         this.largeGameCanvas = new LargeGameCanvas(this, largeHolderWidth || 800, this.spriteSheet);
+        this.longGameCanvas = new LongGameCanvas(this, 30);
         this.resizeCanvasses();
         this.gameLoop = new GameLoop(this);
         window.addEventListener("resize", this.resizeCanvasses.bind(this));
@@ -107,6 +113,15 @@ export default class App {
     addAsteroid(asteroid: Asteroid) {
         this.asteroids.push(asteroid);
         this.sprites.push(asteroid);
+    }
+
+    spawnMobs(){
+        let actor = new Actor(this);
+        actor.x = this.player.x;
+        actor.y = this.player.y;
+
+        this.sprites.push(actor);
+        this.actors.push(actor)
     }
 
     resizeCanvasses() {

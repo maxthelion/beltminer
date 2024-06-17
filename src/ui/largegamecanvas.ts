@@ -1,9 +1,9 @@
-import { Planetoid } from '../planetoid.js';
-import { Asteroid } from '../asteroid.js';
+import { Planetoid } from '../sprites/planetoid.js';
+import { Asteroid } from '../sprites/asteroid.js';
 import Player from '../player.js';
 import App from '../app.js';
 import { GameCanvas } from './gamecanvas.js';
-import { Sprite } from '../sprites.js';
+import { Sprite } from '../sprites/sprites.js';
 
 export class LargeGameCanvas extends GameCanvas {
     spriteSheet: HTMLImageElement;
@@ -30,6 +30,10 @@ export class LargeGameCanvas extends GameCanvas {
         this.app.planetoids.forEach(planetoid => {
             if (this.app.viewPort.containsEntity(planetoid) === false) return;
             this.drawPlanetoid(planetoid, player);
+        });
+        this.app.actors.forEach(actor => {
+            // if (this.app.viewPort.containsEntity(actor) === false) return;
+            this.drawSprite(actor, player);
         });
         if (player.lockedAsteroid) {
             this.drawLockedAsteroid(player.lockedAsteroid, player);
@@ -68,6 +72,25 @@ export class LargeGameCanvas extends GameCanvas {
         this.ctx.strokeStyle = 'white';
         this.ctx.lineWidth = 3;
         this.drawAsteroid(asteroid, player);
+    }
+
+    drawSprite(sprite: Sprite, player: Player) {
+        // console.log(sprite)
+        this.ctx.beginPath();
+        this.centerOnSpriteAndDraw(sprite as Asteroid, player, (spritetorender) => { 
+            this.drawTriangle(spritetorender);
+        });
+    }
+
+    drawTriangle(sprite: Sprite) {
+        // this.ctx.fillStyle = sprite.color;
+        this.ctx.beginPath();
+        this.ctx.moveTo(0, 0);
+        this.ctx.lineTo(20, 0);
+        this.ctx.lineTo(5, 10);
+        this.ctx.closePath();
+        this.ctx.stroke();
+        this.ctx.fill();
     }
 
     centerOnSpriteAndDraw(asteroid: Asteroid, player: Player, drawFunction: (sprite: Sprite) => void) {

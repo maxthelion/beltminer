@@ -30,7 +30,9 @@ export class GameLoop {
         this.app.planetoids.forEach(sprite => {
             sprite.update();
         });
-        
+        this.app.actors.forEach(sprite => {
+            sprite.update();
+        })
         let proximityAsteroids = this.app.proximateAsteroids();
         // console.log(proximityAsteroids.length)
         let player = this.app.sprites[0] as Player;
@@ -70,6 +72,7 @@ export class GameLoop {
         })
         this.app.largeGameCanvas.draw(this.app);
         this.app.smallGameCanvas.draw(this.app);
+        this.app.longGameCanvas.draw(this.app);
         // this.app.infoPane.render();
     }
 

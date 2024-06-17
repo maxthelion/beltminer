@@ -1,9 +1,10 @@
-import { Sector, SubSector } from './sectors.js';
-import AsteroidRenderer from './asteroidrenderer.js';
+import { Sector, SubSector } from '../sectors.js';
+import AsteroidRenderer from '../asteroidrenderer.js';
 import { Sprite } from './sprites.js';
-import SolarSystem  from './solarsystem.js';
-import { GameCanvas } from './ui/gamecanvas.js';
-import { SmallGameCanvas } from './ui/smallgamecanvas.js';
+import SolarSystem  from '../solarsystem.js';
+import { GameCanvas } from '../ui/gamecanvas.js';
+import { SmallGameCanvas } from '../ui/smallgamecanvas.js';
+import App from '../app.js';
 
 export class Asteroid extends Sprite {
     radius: number;
@@ -22,8 +23,8 @@ export class Asteroid extends Sprite {
     subSector!: SubSector;
     
 
-    constructor(system: SolarSystem, sector: Sector) {
-        super();
+    constructor(app: App, system: SolarSystem, sector: Sector) {
+        super(app);
         
         // color generated based on sector
         this.color = `hsl(${(sector.percentage) * 360}, 100%, 50%)`;

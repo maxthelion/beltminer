@@ -1,6 +1,7 @@
-import {Sprite} from './sprites.js';
-import { Asteroid } from './asteroid.js';
+import {Sprite} from './sprites/sprites.js';
+import { Asteroid } from './sprites/asteroid.js';
 import SolarSystem  from './solarsystem.js';
+import App from './app.js';
 
 
 type InventorySlot = {
@@ -21,13 +22,15 @@ export default class Player extends Sprite {
     cx: number;
     cy: number;
     velocity: number;
+    system: SolarSystem;
 
-    constructor(system: SolarSystem) {
-        super();
+    constructor(app: App, system: SolarSystem) {
+        super(app);
+        this.system = system;
         this.x = 0;
         this.y = 0;
         this.angle = 0;
-        this.distanceFromCenter = system.minRadius + ((system.maxRadius - system.minRadius) / 2);
+        this.distanceFromCenter = system.midRadius();
         this.cx = 0;
         this.cy = 0;
         this.direction = Math.random() * Math.PI * 2;
@@ -41,12 +44,18 @@ export default class Player extends Sprite {
             this.direction += this.lockedAsteroid.rotationSpeed;
             this.angle = this.lockedAsteroid.angle;
             this.distanceFromCenter = this.lockedAsteroid.distanceFromCenter;
-        } else { 
-                
-            // if near an asteroid, lock to its speed and direction
-            this.angle -= this.dy / 1000;
-            this.angle %= Math.PI * 2;
+        } else {
+            
+            let systemCircumference = 
+                Math.PI * 2 * this.system.midRadius();
 
+            this.angle -= (this.dy / systemCircumference);
+            // if the angle is less that 0, add 2pi to it
+            if (this.angle < 0) {
+                this.angle += Math.PI * 2;
+            } else if (this.angle > Math.PI * 2) {
+                this.angle -= Math.PI * 2;
+            }
             this.distanceFromCenter -= (this.dx);
             //let radius = 200;
             let oldX = this.x;

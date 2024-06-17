@@ -1,9 +1,9 @@
-import { Planetoid } from '../planetoid.js';
-import { Asteroid } from '../asteroid.js';
+import { Planetoid } from '../sprites/planetoid.js';
+import { Asteroid } from '../sprites/asteroid.js';
 import Player from '../player.js';
 import { GameCanvas } from './gamecanvas.js';
 import App from '../app.js';
-import { Sprite } from '../sprites.js';
+import { Sprite } from '../sprites/sprites.js';
 
 export class SmallGameCanvas extends GameCanvas {
     viewPort = {

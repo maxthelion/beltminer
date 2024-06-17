@@ -1,5 +1,5 @@
 import Player from "./player.js";
-import { Sprite } from "./sprites.js";
+import { Sprite } from "./sprites/sprites.js";
 
 export class RadialViewPort {
     minRadius: number;
