@@ -13,6 +13,14 @@ export default class SolarSystem {
     midRadius() {
         return (this.minRadius + this.maxRadius) / 2;
     }
+
+    radialRange() {
+        return this.maxRadius - this.minRadius;
+    }
+
+    circumference() {
+        return 2 * Math.PI * this.midRadius();
+    }
     
     constructor(){
         this.width = this.maxRadius * 2 + 100;

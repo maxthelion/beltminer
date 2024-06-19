@@ -14,81 +14,93 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 import { Sprite } from "./sprites.js";
-import { BehaviourTreeBuilder, BehaviourTreeReturnValues } from "../max-behaviour-tree.js";
+import { Vector } from "./vector.js";
 var Actor = /** @class */ (function (_super) {
     __extends(Actor, _super);
     function Actor(app) {
         var _this = _super.call(this, app) || this;
         _this.radius = 10;
-        _this.rotation = 0;
         _this.tickInterval = 50;
         _this.frame = 0;
+        _this.length = 0;
+        _this.rotation = 0;
+        _this.slowAcceleration = 0.0001;
+        _this.fastAcceleration = 0.01;
+        _this.acceleration = _this.fastAcceleration;
+        _this.rotationalAcceleration = 0.05;
+        _this.accelerating = false;
+        _this.velocity = 0;
+        _this.vector = new Vector(0, 0);
         _this.x = 50;
         _this.y = 50;
         _this.dx = 0;
         _this.dy = 0;
         _this.angle = 0;
         _this.distanceFromCenter = 0;
-        _this.behaviourTree = new BehaviourTreeBuilder().
-            selector("root").
-            // action("wait to do something", (actor: Actor) => {
-            //     if (actor.frame / 50 < 5) {
-            //         // console.log('waiting to do something');
-            //         return BehaviourTreeReturnValues.SUCCESS;
-            //     } else {
-            //         // console.log('done waiting to do something');
-            //         return BehaviourTreeReturnValues.FAILURE;
-            //     }
-            // }).
-            // sequence("wait to attack").
-            //     action("move randomly", (actor: Actor) => {
-            //         return BehaviourTreeReturnValues.SUCCESS;
-            //     }).
-            //     // condition("is player close", (actor: Actor) => {
-            //     //     return BehaviourTreeReturnValues.SUCCESS;
-            //     // }).
-            action("move towards player", function (actor) {
-            actor.moveTowardsPlayer();
-            return BehaviourTreeReturnValues.SUCCESS;
-        }).
-            end().
-            build();
-        console.log(_this.behaviourTree);
         return _this;
-        // this.behaviourTree.children.forEach(child => {
-        //     console.log(child);
-        // })
     }
-    Actor.prototype.update = function () {
-        // console.log('update');
-        this.frame++;
-        if (this.frame % this.tickInterval == 0) {
-            this.behaviourTree.tick(this);
-            // console.log(this.frame);
-        }
-    };
     Actor.prototype.render = function (gamecanvas) {
-        // gamecanvas.ctx.beginPath();
-        // gamecanvas.ctx.arc(this.x, this.y, 10, 0, Math.PI * 2);
-        // gamecanvas.ctx.fill();
-        // gamecanvas.ctx.stroke();
+        var sprite = this;
+        // this.ctx.beginPath();
+        var ctx = gamecanvas.ctx;
+        ctx.fillStyle = sprite.color;
+        // console.log(sprite.radius);
+        var width = Math.ceil(gamecanvas.scaleFactorX(sprite.radius)) * 2;
+        var height = Math.ceil(gamecanvas.scaleFactorY(sprite.radius)) * 2;
+        ctx.fillRect(gamecanvas.gtlx(sprite.systemX()) - (width / 2), gamecanvas.gtly(sprite.systemY()) - (height / 2), width, height);
+        // ctx.arc(
+        //     this.gtlx(asteroid.x),
+        //     this.gtly(asteroid.y),
+        //     Math.round(this.scaleFactorX(asteroid.radius)),
+        //     0,
+        //     Math.PI * 2
+        // );
+        ctx.fill();
+        ctx.closePath();
     };
-    Actor.prototype.moveTowardsPlayer = function () {
-        // this.x = this.app.player.x;
-        // this.y = this.app.player.y;
-        // point towards player
-        var playerx = this.app.player.distanceFromCenter;
-        var playery = this.app.player.angle;
-        var dx = playerx - this.distanceFromCenter;
-        var dy = playery - this.angle;
-        // console.log(this.app.player.angle)
-        var distance = Math.sqrt(dx * dx + dy * dy);
-        this.rotation = Math.atan2(dy, dx);
-        // console.log(this.rotation, distance);
-        this.angle += (this.app.player.angle - this.angle) * 0.1;
-        this.distanceFromCenter += (this.app.player.distanceFromCenter - this.distanceFromCenter) * 0.1;
-        // this.x += this.dx;
-        // this.y += this.dy;
+    Actor.prototype.accelerate = function () {
+        this.accelerating = true;
+        var thrustVector = new Vector(-this.acceleration, 0);
+        thrustVector.rotate(this.rotation);
+        this.vector.add(thrustVector);
+    };
+    Actor.prototype.updateCoordinates = function () {
+        this.x += this.vector.x;
+        this.y += this.vector.y;
+        var systemCircumference = Math.PI * 2 * this.system.midRadius();
+        // keep the y value within the system circumference
+        // console.log(this.y);
+        this.y = this.y % systemCircumference;
+        console.log(this.y / systemCircumference);
+        this.angle = (this.y / systemCircumference) * Math.PI * 2;
+        // if the angle is less that 0, add 2pi to it
+        // if (this.angle < 0) {
+        //     this.angle += Math.PI * 2;
+        // } else if (this.angle > Math.PI * 2) {
+        //     this.angle -= Math.PI * 2;
+        // }
+        this.distanceFromCenter = this.system.midRadius() + this.x;
+        //let radius = 200;
+        var oldX = this.x;
+        var oldY = this.y;
+        // this.x = this.distanceFromCenter * Math.cos(this.angle);
+        // this.y = this.distanceFromCenter * Math.sin(this.angle);
+        this.velocity = Math.sqrt(Math.pow(this.x - oldX, 2) + Math.pow(this.y - oldY, 2));
+    };
+    Actor.prototype.stop = function () {
+        this.vector = new Vector(0, 0);
+    };
+    Actor.prototype.systemX = function () {
+        return this.distanceFromCenter * Math.cos(this.angle);
+    };
+    Actor.prototype.systemY = function () {
+        return this.distanceFromCenter * Math.sin(this.angle);
+    };
+    Actor.prototype.bandX = function () {
+        return this.x;
+    };
+    Actor.prototype.bandY = function () {
+        return this.y;
     };
     return Actor;
 }(Sprite));

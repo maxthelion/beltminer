@@ -67,14 +67,14 @@ export class SmallGameCanvas extends GameCanvas {
                 return;
             }
             this.drawSprite(sprite);
-
         });
         this.drawPlayer(app.sprites[0] as Player);
         // fill as light blue
 
-        
-        this.ctx.resetTransform();
+        // commment out for fog of war
+        // this.ctx.resetTransform();
         // this.applySubSectorMask();
+        this.ctx.resetTransform();
         this.drawCurrentSectors();
         this.ctx.resetTransform();
 
@@ -126,6 +126,7 @@ export class SmallGameCanvas extends GameCanvas {
 
     drawCurrentSectors() {
         let subsectors = this.app.getSubSectors();
+        subsectors = this.app.currentSubSectors;
         subsectors.forEach(subSector => {
             let firstAngle = subSector.minAngle;
             let lastAngle = subSector.maxAngle;
@@ -151,16 +152,16 @@ export class SmallGameCanvas extends GameCanvas {
     }
 
     applySubSectorMask() {
-        if (this.app.newSubSectors.length > 0) {
+        if (this.app.newlyDiscoveredSubSectors.length > 0) {
             // this.ctx2.clearRect(0, 0, this.width, this.height);
-            this.app.newSubSectors.forEach(subSector => {
+            this.app.newlyDiscoveredSubSectors.forEach(subSector => {
                 let firstAngle = subSector.minAngle;
                 let lastAngle = subSector.maxAngle;
                 let outerRadius = this.scaleFactorXWithoutZoom( subSector.minRadius ) ;
                 let innerRadius = this.scaleFactorXWithoutZoom( subSector.maxRadius ) ;
                 this.drawSubSectorBlock(firstAngle, lastAngle, innerRadius, outerRadius, 'rgb(255, 255, 255)');
             })
-            this.app.newSubSectors = [];
+            this.app.newlyDiscoveredSubSectors = [];
             // for debugging
             //this.drawMaskToOutputCanvas();
         }
@@ -225,7 +226,7 @@ export class SmallGameCanvas extends GameCanvas {
 
     drawSector() {
         let sector = this.app.getSector();
-
+        
         let firstAngle = sector.minAngle;
         let lastAngle = sector.maxAngle;
         let outerRadius = this.scaleFactorX( this.app.solarSystem.minRadius ) ;
@@ -397,7 +398,7 @@ export class SmallGameCanvas extends GameCanvas {
         this.ctx.rotate(nine);
         this.ctx.beginPath();
         this.ctx.fillStyle = 'red';
-        let angle = player.direction;
+        let angle = player.rotation;
 
         let radius = player.distanceFromCenter;
         let x = radius * Math.cos(nine);

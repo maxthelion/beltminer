@@ -39,6 +39,9 @@ var LinkedList = /** @class */ (function () {
     LinkedList.prototype.add = function (item) {
         this.items.push(item);
     };
+    LinkedList.prototype.every = function (func) {
+        return this.items.every(func);
+    };
     return LinkedList;
 }());
 var BehaviourTreeBuilder = /** @class */ (function () {
@@ -129,7 +132,7 @@ var BehaviourTreeNode = /** @class */ (function () {
         this.params.name = name;
     }
     BehaviourTreeNode.prototype.tick = function (actor) {
-        console.log('ticker ', this.params.name);
+        // console.log('ticker ', this.params.name);
         return BehaviourTreeReturnValues.SUCCESS;
     };
     return BehaviourTreeNode;
@@ -165,7 +168,7 @@ var Sequence = /** @class */ (function (_super) {
     Sequence.prototype.tick = function (actor) {
         _super.prototype.tick.call(this, actor);
         var result = BehaviourTreeReturnValues.SUCCESS;
-        this.children.forEach(function (child) {
+        this.children.every(function (child) {
             result = child.tick(actor);
             if (result === BehaviourTreeReturnValues.FAILURE) {
                 return result;

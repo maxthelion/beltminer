@@ -4,6 +4,8 @@ import Player from '../player.js';
 import App from '../app.js';
 import { GameCanvas } from './gamecanvas.js';
 import { Sprite } from '../sprites/sprites.js';
+import { SubSector } from '../sectors.js';
+import { Station } from '../sprites/station.js';
 
 export class LargeGameCanvas extends GameCanvas {
     spriteSheet: HTMLImageElement;
@@ -15,26 +17,26 @@ export class LargeGameCanvas extends GameCanvas {
         this.ctx = this.canvas.getContext('2d') as CanvasRenderingContext2D;
     }
 
-
-
     draw(app: App) {
         this.ctx.clearRect(0, 0, this.width, this.height);
         // this.ctx.fillStyle = "rgba(0, 0, 0, 0.01)"
         //this.ctx.fillRect(0, 0, this.width, this.height);
         let player = this.app.sprites[0] as Player;
         this.ctx.beginPath();
-        this.app.asteroids.forEach(asteroid => {
-            if (this.app.viewPort.containsEntity(asteroid) === false) return;
-            this.drawNormalAsteroid(asteroid, player);
-        });
-        this.app.planetoids.forEach(planetoid => {
-            if (this.app.viewPort.containsEntity(planetoid) === false) return;
-            this.drawPlanetoid(planetoid, player);
+        this.app.proximateBodies().forEach(body => {
+            if (body instanceof Asteroid) {
+                this.drawNormalAsteroid(body, player);
+            }
+            if (body instanceof Planetoid) {
+                this.drawPlanetoid(body, player);
+            }
+            if (body instanceof Station) {
+                this.drawSprite(body, player);
+            }
         });
         this.app.actors.forEach(actor => {
-            // if (this.app.viewPort.containsEntity(actor) === false) return;
             this.drawSprite(actor, player);
-        });
+        })
         if (player.lockedAsteroid) {
             this.drawLockedAsteroid(player.lockedAsteroid, player);
         }
@@ -42,22 +44,56 @@ export class LargeGameCanvas extends GameCanvas {
             this.drawFocussedSprite(this.app.focussedSprite, player);
         }
         this.drawPlayer(player);
-        this.drawSector();
+        this.drawSubSectors();
     }
 
-    drawSector() {
-        let sector = this.app.getSector();
+    drawSubSectors() {
+        this.app.currentSubSectors.forEach(subSector => {
+            this.drawSector(subSector);
+        });
+    }
 
-        let firstAngle =    this.scaleFactorY(sector.minAngle);
-        let lastAngle =     this.scaleFactorY(sector.maxAngle);
-        let outerRadius = this.scaleFactorX( this.app.solarSystem.minRadius ) ;
-        let innerRadius = this.scaleFactorX( this.app.solarSystem.maxRadius ) ;
+    drawSector(sector: SubSector) {
+        // let sector = this.app.getSector();
+        this.ctx.strokeStyle = 'white';
+        this.ctx.lineWidth = 1;
         this.ctx.beginPath();
-        this.ctx.moveTo(firstAngle, outerRadius);
-        this.ctx.lineTo(lastAngle, outerRadius);
-        this.ctx.lineTo(lastAngle, innerRadius);
-        this.ctx.lineTo(firstAngle, innerRadius);
+        // console.log(sector.minAngle, sector.maxAngle)
+        // let relativeY = this.scaleFactorY(sector.minAngle);
+
+        let relativeYMin = (sector.minAngle - this.app.player!.angle) / this.app.viewPort.arcLength;
+        let relativeYMax = (sector.maxAngle - this.app.player!.angle) / this.app.viewPort.arcLength;
+        let ymin = this.height - (this.height / 2 + (relativeYMin * this.height));
+        let ymax = this.height - (this.height / 2 + (relativeYMax * this.height));
+
+        let relativeXMin = (sector.minRadius - this.app.player!.distanceFromCenter) / this.app.viewPort.radialWidth;
+        let relativeXMax = (sector.maxRadius - this.app.player!.distanceFromCenter) / this.app.viewPort.radialWidth;
+        let xmin = this.width - (this.width / 2 + (relativeXMin * this.width));
+        let xmax = this.width - (this.width / 2 + (relativeXMax * this.width));
+
+        // let x = this.width - (this.width/ 2 + (relativeX * this.width)); 
+
+        xmax = Math.round(xmax);
+        xmin = Math.round(xmin);
+        ymax = Math.round(ymax);
+        ymin = Math.round(ymin);
+
+        this.ctx.moveTo(xmin, ymin);
+        this.ctx.lineTo(xmax, ymin);
+        this.ctx.lineTo(xmax, ymax);
+        this.ctx.lineTo(xmin, ymax);
+        this.ctx.closePath();
         this.ctx.stroke();
+        // let firstAngle =    this.scaleFactorY(sector.minAngle);
+        // let lastAngle =     this.scaleFactorY(sector.maxAngle);
+        // let outerRadius = this.scaleFactorX( this.app.solarSystem.minRadius ) ;
+        // let innerRadius = this.scaleFactorX( this.app.solarSystem.maxRadius ) ;
+        // this.ctx.beginPath();
+        // this.ctx.moveTo(firstAngle, outerRadius);
+        // this.ctx.lineTo(lastAngle, outerRadius);
+        // this.ctx.lineTo(lastAngle, innerRadius);
+        // this.ctx.lineTo(firstAngle, innerRadius);
+        // this.ctx.stroke();
         // console.log(firstAngle, lastAngle, outerRadius, innerRadius);
     }
 
@@ -101,10 +137,12 @@ export class LargeGameCanvas extends GameCanvas {
 
     drawTriangle(sprite: Sprite) {
         // this.ctx.fillStyle = sprite.color;
+        let width = 10;
+        let height = sprite.length;
         this.ctx.beginPath();
-        this.ctx.moveTo(0, 0);
-        this.ctx.lineTo(20, 0);
-        this.ctx.lineTo(5, 10);
+        this.ctx.moveTo(width / 2 * -1, 0);
+        this.ctx.lineTo(0, height);
+        this.ctx.lineTo(width / 2, 0);
         this.ctx.closePath();
         this.ctx.stroke();
         this.ctx.fill();
@@ -190,7 +228,7 @@ export class LargeGameCanvas extends GameCanvas {
         this.ctx.beginPath();
 
         this.ctx.fillStyle = player.color;
-        let angle = player.direction;
+        let angle = player.rotation;
         this.ctx.translate(this.width / 2, this.height / 2);
         this.ctx.rotate(angle);
         // draw sprite from sprite sheet

@@ -15,29 +15,33 @@ var __extends = (this && this.__extends) || (function () {
 })();
 import { Sector, SubSector } from '../sectors.js';
 import AsteroidRenderer from '../asteroidrenderer.js';
-import { Sprite } from './sprites.js';
 import SolarSystem from '../solarsystem.js';
+import { PlanetaryBody } from './planetarybody.js';
 var Asteroid = /** @class */ (function (_super) {
     __extends(Asteroid, _super);
-    function Asteroid(app, system, sector) {
-        var _this = _super.call(this, app) || this;
-        _this.angle = 0; // Initial angle
+    function Asteroid(app, sector) {
+        var _this = _super.call(this, app, sector) || this;
+        // a; // Semi-major axis length
+        // b; // Semi-minor axis length
+        // cx; // Center x
+        // cy; // Center y
         _this.speed = 0.1; // Speed of rotation
         _this.color = 'white';
         _this.mass = 1;
+        var system = app.solarSystem;
         // color generated based on sector
-        _this.color = "hsl(".concat((sector.percentage) * 360, ", 100%, 50%)");
-        _this.radius = Math.random() + 0.02;
+        _this.color = "hsl(".concat((sector.percentage) * 360, ", 100%, 80%)");
+        var minAsteroidRadius = 1;
+        _this.radius = minAsteroidRadius +
+            (Math.random() * sector.radialDistanceFromOrigin())
+            + 0.02
+            + Math.pow(sector.radialDistanceFromOrigin(), 4);
         _this.mass = _this.radius * 0.0005;
         // angle based on sector
-        _this.angle = Math.random() * (sector.maxAngle - sector.minAngle) + sector.minAngle;
+        // this.angle = Math.random() * (sector.maxAngle - sector.minAngle) + sector.minAngle;
         // let sectorArcWidth = sector.maxAngle - sector.minAngle;
-        _this.sector = sector;
+        // this.sector = sector;
         // this.angle = Math.random() * Math.PI * 2;
-        _this.cx = system.centerX;
-        _this.cy = system.centerY;
-        _this.a = Math.random() * (system.maxRadius - system.minRadius) + system.minRadius;
-        _this.b = Math.random() * (system.maxRadius - system.minRadius) + system.minRadius;
         _this.speed = Math.random() * 0.0000001 + 0.0000001;
         _this.asteroidPoints = AsteroidRenderer.generateAsteroidShape(10, _this.radius);
         _this.rotation = Math.random() * Math.PI * 2;
@@ -65,14 +69,9 @@ var Asteroid = /** @class */ (function (_super) {
     };
     Asteroid.prototype.update = function () {
         this.rotation += this.rotationSpeed;
-        this.x = this.cx + this.a * Math.cos(this.angle);
-        this.y = this.cy + this.b * Math.sin(this.angle);
         this.angle += this.speed;
-        this.angle %= Math.PI * 2;
-        this.distanceFromCenter = Math.sqrt(Math.pow(this.x - this.cx, 2) + Math.pow(this.y - this.cy, 2));
-        this.setSubSector();
-    };
-    Asteroid.prototype.setSubSector = function () {
+        this.x = this.distanceFromCenter * Math.cos(this.angle);
+        this.y = this.distanceFromCenter * Math.sin(this.angle);
     };
     Asteroid.prototype.render = function (gamecanvas) {
         var sprite = this;
@@ -80,7 +79,9 @@ var Asteroid = /** @class */ (function (_super) {
         var ctx = gamecanvas.ctx;
         ctx.fillStyle = sprite.color;
         // console.log(sprite.radius);
-        ctx.fillRect(gamecanvas.gtlx(sprite.x), gamecanvas.gtly(sprite.y), Math.ceil(gamecanvas.scaleFactorX(sprite.radius)) * 2, Math.ceil(gamecanvas.scaleFactorY(sprite.radius)) * 2);
+        var width = Math.ceil(gamecanvas.scaleFactorX(sprite.radius)) * 2;
+        var height = Math.ceil(gamecanvas.scaleFactorY(sprite.radius)) * 2;
+        ctx.fillRect(gamecanvas.gtlx(sprite.x) - (width / 2), gamecanvas.gtly(sprite.y) - (height / 2), width, height);
         // ctx.arc(
         //     this.gtlx(asteroid.x),
         //     this.gtly(asteroid.y),
@@ -92,5 +93,5 @@ var Asteroid = /** @class */ (function (_super) {
         ctx.closePath();
     };
     return Asteroid;
-}(Sprite));
+}(PlanetaryBody));
 export { Asteroid };

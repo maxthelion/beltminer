@@ -13,7 +13,10 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
+import { Planetoid } from '../sprites/planetoid.js';
+import { Asteroid } from '../sprites/asteroid.js';
 import { GameCanvas } from './gamecanvas.js';
+import { Station } from '../sprites/station.js';
 var LargeGameCanvas = /** @class */ (function (_super) {
     __extends(LargeGameCanvas, _super);
     function LargeGameCanvas(app, width, spriteSheet) {
@@ -31,18 +34,18 @@ var LargeGameCanvas = /** @class */ (function (_super) {
         //this.ctx.fillRect(0, 0, this.width, this.height);
         var player = this.app.sprites[0];
         this.ctx.beginPath();
-        this.app.asteroids.forEach(function (asteroid) {
-            if (_this.app.viewPort.containsEntity(asteroid) === false)
-                return;
-            _this.drawNormalAsteroid(asteroid, player);
-        });
-        this.app.planetoids.forEach(function (planetoid) {
-            if (_this.app.viewPort.containsEntity(planetoid) === false)
-                return;
-            _this.drawPlanetoid(planetoid, player);
+        this.app.proximateBodies().forEach(function (body) {
+            if (body instanceof Asteroid) {
+                _this.drawNormalAsteroid(body, player);
+            }
+            if (body instanceof Planetoid) {
+                _this.drawPlanetoid(body, player);
+            }
+            if (body instanceof Station) {
+                _this.drawSprite(body, player);
+            }
         });
         this.app.actors.forEach(function (actor) {
-            // if (this.app.viewPort.containsEntity(actor) === false) return;
             _this.drawSprite(actor, player);
         });
         if (player.lockedAsteroid) {
@@ -52,20 +55,50 @@ var LargeGameCanvas = /** @class */ (function (_super) {
             this.drawFocussedSprite(this.app.focussedSprite, player);
         }
         this.drawPlayer(player);
-        this.drawSector();
+        this.drawSubSectors();
     };
-    LargeGameCanvas.prototype.drawSector = function () {
-        var sector = this.app.getSector();
-        var firstAngle = this.scaleFactorY(sector.minAngle);
-        var lastAngle = this.scaleFactorY(sector.maxAngle);
-        var outerRadius = this.scaleFactorX(this.app.solarSystem.minRadius);
-        var innerRadius = this.scaleFactorX(this.app.solarSystem.maxRadius);
+    LargeGameCanvas.prototype.drawSubSectors = function () {
+        var _this = this;
+        this.app.currentSubSectors.forEach(function (subSector) {
+            _this.drawSector(subSector);
+        });
+    };
+    LargeGameCanvas.prototype.drawSector = function (sector) {
+        // let sector = this.app.getSector();
+        this.ctx.strokeStyle = 'white';
+        this.ctx.lineWidth = 1;
         this.ctx.beginPath();
-        this.ctx.moveTo(firstAngle, outerRadius);
-        this.ctx.lineTo(lastAngle, outerRadius);
-        this.ctx.lineTo(lastAngle, innerRadius);
-        this.ctx.lineTo(firstAngle, innerRadius);
+        // console.log(sector.minAngle, sector.maxAngle)
+        // let relativeY = this.scaleFactorY(sector.minAngle);
+        var relativeYMin = (sector.minAngle - this.app.player.angle) / this.app.viewPort.arcLength;
+        var relativeYMax = (sector.maxAngle - this.app.player.angle) / this.app.viewPort.arcLength;
+        var ymin = this.height - (this.height / 2 + (relativeYMin * this.height));
+        var ymax = this.height - (this.height / 2 + (relativeYMax * this.height));
+        var relativeXMin = (sector.minRadius - this.app.player.distanceFromCenter) / this.app.viewPort.radialWidth;
+        var relativeXMax = (sector.maxRadius - this.app.player.distanceFromCenter) / this.app.viewPort.radialWidth;
+        var xmin = this.width - (this.width / 2 + (relativeXMin * this.width));
+        var xmax = this.width - (this.width / 2 + (relativeXMax * this.width));
+        // let x = this.width - (this.width/ 2 + (relativeX * this.width)); 
+        xmax = Math.round(xmax);
+        xmin = Math.round(xmin);
+        ymax = Math.round(ymax);
+        ymin = Math.round(ymin);
+        this.ctx.moveTo(xmin, ymin);
+        this.ctx.lineTo(xmax, ymin);
+        this.ctx.lineTo(xmax, ymax);
+        this.ctx.lineTo(xmin, ymax);
+        this.ctx.closePath();
         this.ctx.stroke();
+        // let firstAngle =    this.scaleFactorY(sector.minAngle);
+        // let lastAngle =     this.scaleFactorY(sector.maxAngle);
+        // let outerRadius = this.scaleFactorX( this.app.solarSystem.minRadius ) ;
+        // let innerRadius = this.scaleFactorX( this.app.solarSystem.maxRadius ) ;
+        // this.ctx.beginPath();
+        // this.ctx.moveTo(firstAngle, outerRadius);
+        // this.ctx.lineTo(lastAngle, outerRadius);
+        // this.ctx.lineTo(lastAngle, innerRadius);
+        // this.ctx.lineTo(firstAngle, innerRadius);
+        // this.ctx.stroke();
         // console.log(firstAngle, lastAngle, outerRadius, innerRadius);
     };
     LargeGameCanvas.prototype.drawFocussedSprite = function (sprite, player) {
@@ -100,10 +133,12 @@ var LargeGameCanvas = /** @class */ (function (_super) {
     };
     LargeGameCanvas.prototype.drawTriangle = function (sprite) {
         // this.ctx.fillStyle = sprite.color;
+        var width = 10;
+        var height = sprite.length;
         this.ctx.beginPath();
-        this.ctx.moveTo(0, 0);
-        this.ctx.lineTo(20, 0);
-        this.ctx.lineTo(5, 10);
+        this.ctx.moveTo(width / 2 * -1, 0);
+        this.ctx.lineTo(0, height);
+        this.ctx.lineTo(width / 2, 0);
         this.ctx.closePath();
         this.ctx.stroke();
         this.ctx.fill();
@@ -180,7 +215,7 @@ var LargeGameCanvas = /** @class */ (function (_super) {
     LargeGameCanvas.prototype.drawPlayer = function (player) {
         this.ctx.beginPath();
         this.ctx.fillStyle = player.color;
-        var angle = player.direction;
+        var angle = player.rotation;
         this.ctx.translate(this.width / 2, this.height / 2);
         this.ctx.rotate(angle);
         // draw sprite from sprite sheet

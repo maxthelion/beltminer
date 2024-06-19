@@ -21,6 +21,9 @@ class LinkedList {
     add(item: BehaviourTreeNode) {
         this.items.push(item);
     }
+    every(func: Function) {
+        return this.items.every(func);
+    }
 }
 
 export class BehaviourTreeBuilder {
@@ -119,7 +122,7 @@ export class BehaviourTreeNode {
     }
 
     tick(actor: Actor) : number{
-        console.log('ticker ', this.params.name);
+        // console.log('ticker ', this.params.name);
         return BehaviourTreeReturnValues.SUCCESS;
     }
 }
@@ -146,7 +149,7 @@ class Sequence extends BehaviourTreeNode {
     tick(actor: Actor) {
         super.tick(actor);
         let result = BehaviourTreeReturnValues.SUCCESS;
-        this.children.forEach(child => {
+        this.children.every(child => {
             result = child.tick(actor);
             if (result === BehaviourTreeReturnValues.FAILURE) {
                 return result;

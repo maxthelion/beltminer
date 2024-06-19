@@ -15,6 +15,8 @@ import KeyHandler from './keyhandler.js';
 import EntityViewer from './ui/entityviewer.js';
 import { Actor } from './sprites/actor.js';
 import { LongGameCanvas } from './ui/longgamecanvas.js';
+import { Station } from './sprites/station.js';
+import { Mob } from './sprites/mob.js';
 
 class ViewPort {
     x: number;
@@ -32,8 +34,8 @@ class ViewPort {
 export default class App {
     gameLoop: GameLoop;
     sprites: Sprite[];
-    asteroids: Asteroid[];
-    planetoids: Planetoid[];
+    // asteroids: Asteroid[];
+    // planetoids: Planetoid[];
     actors: Actor[] = [];
     smallGameCanvas: SmallGameCanvas;
     largeGameCanvas: LargeGameCanvas;
@@ -60,7 +62,8 @@ export default class App {
     sectors: Sector[] = [];
     subSectors: SubSector[][] = [];
     currentSubSector: SubSector = new SubSector(0, 0);
-    newSubSectors: SubSector[] = [];
+    newlyDiscoveredSubSectors: SubSector[] = [];
+    currentSubSectors: SubSector[] = [];
     focussedSprite: Sprite | undefined;
     longGameCanvas: LongGameCanvas;
 
@@ -73,25 +76,15 @@ export default class App {
 
         this.player = new Player(this, this.solarSystem);
         this.sprites.push(this.player);
-        this.planetoids = [ ];
-        let ceres = new Planetoid(this, this.solarSystem, "Ceres");
-        this.sprites.push(ceres);
-        this.planetoids.push(ceres);
 
-        for (let i = 0; i < 10; i++) {
-            let otherThing = new Planetoid(this, this.solarSystem, "Ceres");
-            this.sprites.push(otherThing);
-            this.planetoids.push(otherThing);
-        }
-
-        this.asteroids = [ ];
         // iterate through sections of the solar system and create asteroids in each section
         // let sectionWidth = 0.1 * Math.PI;
         let numSectors = Sector.sectorNum;
         for (let sectorNum = 0; sectorNum < numSectors; sectorNum++) {
-            let sector = new Sector(sectorNum);
+            let sector = new Sector(this, sectorNum);
             this.sectors[sectorNum] = sector;
             sector.populate(this);
+            this.sprites = this.sprites.concat(sector.sprites);
             //this.asteroids.push(new Asteroid(this.solarSystem, sectorNum));
         }
         this.spawnMobs();
@@ -110,15 +103,23 @@ export default class App {
         this.keyHandler = new KeyHandler(this);
     }
 
-    addAsteroid(asteroid: Asteroid) {
-        this.asteroids.push(asteroid);
-        this.sprites.push(asteroid);
-    }
-
     spawnMobs(){
-        let actor = new Actor(this);
+        let actor = new Mob(this);
         actor.x = this.player.x;
         actor.y = this.player.y;
+        actor.destination = this.player;
+
+        let numberOfActors = 8;
+        for (let i = 0; i < numberOfActors; i++) {
+            let actor = new Mob(this);
+            actor.distanceFromCenter = this.solarSystem.minRadius + (Math.random() * this.solarSystem.radialRange());
+            actor.angle = Math.random() * Math.PI * 2;
+            // destination is a random sprite
+            actor.destination = this.sprites[Math.floor(Math.random() * this.sprites.length)];
+            console.log(actor.destination)
+            this.actors.push(actor);
+            this.sprites.push(actor);
+        }
 
         this.sprites.push(actor);
         this.actors.push(actor)
@@ -132,7 +133,8 @@ export default class App {
         let smallHolderEl = document.getElementById("smallscreen")
         let smallHolderWidth = smallHolderEl!.clientWidth;
         let smallHolderHeight = smallHolderEl!.clientHeight;
-        console.log(smallHolderWidth, smallHolderHeight)
+        
+        // console.log(smallHolderWidth, smallHolderHeight)
         this.smallGameCanvas.setDimensions(smallHolderWidth || 200, smallHolderHeight || 200);
     }
 
@@ -158,9 +160,17 @@ export default class App {
     }
 
     proximateAsteroids() {
-        return this.asteroids.filter(asteroid => {
-            return this.areAnglesClose(asteroid.angle, this.player.angle, 0.1 * Math.PI) 
-        });
+        // return this.asteroids.filter(asteroid => {
+        //     return this.areAnglesClose(asteroid.angle, this.player.angle, 0.1 * Math.PI) 
+        // });
+    }
+
+    getCurrentSector() {
+        return this.sectors[this.currentSectorIndex];
+    }
+
+    proximateBodies() {
+        return this.getCurrentSector().sprites;
     }
 
     getSubSectors() {
@@ -198,25 +208,42 @@ export default class App {
         this.calculateViewPort();
     }
 
+    // called on every frame
     calculateSubSectors() {
-        let subSectors = SubSector.subSectorNum;
-        let sectorSize = (2 * Math.PI) / (Sector.sectorNum * subSectors);
-        let subSectorArcIndex = Math.floor(this.player.angle / sectorSize);
+        let subSectorNum = SubSector.subSectorNum;
+        let subSectorSize = (2 * Math.PI) / (Sector.sectorNum * subSectorNum);
+        let subSectorArcIndex = Math.floor(this.player.angle / subSectorSize);
+        let arcBias = this.player.angle % subSectorSize;
+        let subSectorArc = (arcBias > subSectorSize / 2) ? 1 : -1;
+
         let minRadius = this.solarSystem.minRadius;
-        let maxRadius = this.solarSystem.maxRadius;
-        let radialRange = maxRadius - minRadius;
+        let radialRange = this.solarSystem.radialRange();
         let radialSectorNum = SubSector.radialDivisions;
-        let subSectorRadialIndex = Math.floor((this.player.distanceFromCenter - minRadius) / radialRange * radialSectorNum);
+
+        let radialSectorSize = radialRange / radialSectorNum;
+        let subSectorRadialIndex = Math.floor((this.player.distanceFromCenter - minRadius) / radialSectorSize);
+
+        let radialBias = (this.player.distanceFromCenter - minRadius) % radialSectorSize;
+        let subSectorRadial = (radialBias > radialSectorSize / 2) ? 1 : -1;
+        
+        // console.log(subSectorRadial)
         if (subSectorArcIndex !== this.currentSubSector.arcIndex || subSectorRadialIndex !== this.currentSubSector.radialIndex) {
             this.currentSubSector = new SubSector(subSectorArcIndex, subSectorRadialIndex);
             this.subSectors[subSectorArcIndex] = this.subSectors[subSectorArcIndex] || [];
             this.subSectors[subSectorArcIndex][subSectorRadialIndex] = this.currentSubSector;
             // console.log(subSectorRadialIndex, subSectorArcIndex)
-            this.newSubSectors.push(this.currentSubSector);
+            this.newlyDiscoveredSubSectors.push(this.currentSubSector);
         }
-        //console.log(this.subSectors.length)
+
+        this.currentSubSectors = [this.currentSubSector];
+        this.currentSubSectors.push( new SubSector(subSectorArcIndex + subSectorArc, subSectorRadialIndex + subSectorRadial));
+        this.currentSubSectors.push( new SubSector(subSectorArcIndex, subSectorRadialIndex + subSectorRadial));
+        this.currentSubSectors.push( new SubSector(subSectorArcIndex + subSectorArc, subSectorRadialIndex));
+
+        // console.log(this.subSectors.length)
     }
 
+    // called on every frame 
     calculateViewPort() {
         // console.log(this.player.velocity)
         if (this.player.velocity > 2) {
@@ -232,6 +259,7 @@ export default class App {
         }
     }
 
+    // called on every frame
     calculateSector() {
         let sectorSize = (2 * Math.PI) / Sector.sectorNum;
         let sector = Math.floor(this.player.angle / sectorSize);

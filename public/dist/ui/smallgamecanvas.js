@@ -77,8 +77,10 @@ var SmallGameCanvas = /** @class */ (function (_super) {
         });
         this.drawPlayer(app.sprites[0]);
         // fill as light blue
-        this.ctx.resetTransform();
+        // commment out for fog of war
+        // this.ctx.resetTransform();
         // this.applySubSectorMask();
+        this.ctx.resetTransform();
         this.drawCurrentSectors();
         this.ctx.resetTransform();
         this.drawViewPort();
@@ -120,6 +122,7 @@ var SmallGameCanvas = /** @class */ (function (_super) {
     SmallGameCanvas.prototype.drawCurrentSectors = function () {
         var _this = this;
         var subsectors = this.app.getSubSectors();
+        subsectors = this.app.currentSubSectors;
         subsectors.forEach(function (subSector) {
             var firstAngle = subSector.minAngle;
             var lastAngle = subSector.maxAngle;
@@ -144,16 +147,16 @@ var SmallGameCanvas = /** @class */ (function (_super) {
     };
     SmallGameCanvas.prototype.applySubSectorMask = function () {
         var _this = this;
-        if (this.app.newSubSectors.length > 0) {
+        if (this.app.newlyDiscoveredSubSectors.length > 0) {
             // this.ctx2.clearRect(0, 0, this.width, this.height);
-            this.app.newSubSectors.forEach(function (subSector) {
+            this.app.newlyDiscoveredSubSectors.forEach(function (subSector) {
                 var firstAngle = subSector.minAngle;
                 var lastAngle = subSector.maxAngle;
                 var outerRadius = _this.scaleFactorXWithoutZoom(subSector.minRadius);
                 var innerRadius = _this.scaleFactorXWithoutZoom(subSector.maxRadius);
                 _this.drawSubSectorBlock(firstAngle, lastAngle, innerRadius, outerRadius, 'rgb(255, 255, 255)');
             });
-            this.app.newSubSectors = [];
+            this.app.newlyDiscoveredSubSectors = [];
             // for debugging
             //this.drawMaskToOutputCanvas();
         }
@@ -317,7 +320,7 @@ var SmallGameCanvas = /** @class */ (function (_super) {
         this.ctx.rotate(nine);
         this.ctx.beginPath();
         this.ctx.fillStyle = 'red';
-        var angle = player.direction;
+        var angle = player.rotation;
         var radius = player.distanceFromCenter;
         var x = radius * Math.cos(nine);
         var y = radius * Math.sin(nine);

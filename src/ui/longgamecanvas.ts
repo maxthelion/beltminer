@@ -5,6 +5,8 @@ import { GameCanvas } from './gamecanvas.js';
 import App from '../app.js';
 import { Sprite } from '../sprites/sprites.js';
 import SolarSystem from '../solarsystem.js';
+import { Actor } from '../sprites/actor.js';
+import { Mob } from '../sprites/mob.js';
 
 export class LongGameCanvas extends GameCanvas {
     constructor(app: App, width: number) {
@@ -28,24 +30,36 @@ export class LongGameCanvas extends GameCanvas {
             this.ctx.fillRect(20, i * yHeight, 1, 1);
             this.ctx.closePath();
         }
-        let sprite = this.app.sprites[0] as Player;
+        let player = this.app.sprites[0] as Player;
         // console.log((sprite.angle / (Math.PI * 2)) * this.app.solarSystem.midRadius());
         // console.log('drawing long canvas',sprite.distanceFromCenter,sprite.angle);
-        let y = this.radiansToDeimmal(sprite.angle);
+        let y = this.radiansToDeimmal(player.angle);
         // console.log(y, sprite.angle, this.scaleY(y));
 
         this.app.sprites.forEach(sprite => {
             // console.log(sprite.distanceFromCenter,sprite.angle)
-            this.drawSprite(sprite);
+            if (sprite instanceof Actor) {
+                this.drawSprite(sprite, 'red', 4);
+            } else if (sprite instanceof Planetoid) {
+                this.drawSprite(sprite, 'orange', 10);
+            } else if (sprite instanceof Asteroid) {
+                this.drawSprite(sprite, sprite.color, 1);
+            } else if (sprite instanceof Mob) {
+                this.drawSprite(sprite, 'green', 2);
+            } else if (sprite instanceof Player) {
+                this.drawSprite(sprite, 'red', 2);
+
+            } else {
+                this.drawSprite(sprite, 'cyan', 5);
+            }
         });
-        this.drawSprite(sprite, 'red', 10);
     }
 
     drawSprite(sprite: Sprite, color: string = 'white', size: number = 1) {
         this.ctx.beginPath();
         let x = sprite.relativeX();
         let y = this.radiansToDeimmal(sprite.angle);
-        this.ctx.fillStyle = sprite.color || color;
+        this.ctx.fillStyle = color;
 
         // console.log(x, y);
         this.ctx.fillRect(

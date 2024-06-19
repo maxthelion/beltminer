@@ -13,7 +13,12 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
+import { Planetoid } from '../sprites/planetoid.js';
+import { Asteroid } from '../sprites/asteroid.js';
+import Player from '../player.js';
 import { GameCanvas } from './gamecanvas.js';
+import { Actor } from '../sprites/actor.js';
+import { Mob } from '../sprites/mob.js';
 var LongGameCanvas = /** @class */ (function (_super) {
     __extends(LongGameCanvas, _super);
     function LongGameCanvas(app, width) {
@@ -37,16 +42,32 @@ var LongGameCanvas = /** @class */ (function (_super) {
             this.ctx.fillRect(20, i * yHeight, 1, 1);
             this.ctx.closePath();
         }
-        var sprite = this.app.sprites[0];
+        var player = this.app.sprites[0];
         // console.log((sprite.angle / (Math.PI * 2)) * this.app.solarSystem.midRadius());
         // console.log('drawing long canvas',sprite.distanceFromCenter,sprite.angle);
-        var y = this.radiansToDeimmal(sprite.angle);
+        var y = this.radiansToDeimmal(player.angle);
         // console.log(y, sprite.angle, this.scaleY(y));
         this.app.sprites.forEach(function (sprite) {
             // console.log(sprite.distanceFromCenter,sprite.angle)
-            _this.drawSprite(sprite);
+            if (sprite instanceof Actor) {
+                _this.drawSprite(sprite, 'red', 4);
+            }
+            else if (sprite instanceof Planetoid) {
+                _this.drawSprite(sprite, 'orange', 10);
+            }
+            else if (sprite instanceof Asteroid) {
+                _this.drawSprite(sprite, sprite.color, 1);
+            }
+            else if (sprite instanceof Mob) {
+                _this.drawSprite(sprite, 'green', 2);
+            }
+            else if (sprite instanceof Player) {
+                _this.drawSprite(sprite, 'red', 2);
+            }
+            else {
+                _this.drawSprite(sprite, 'cyan', 5);
+            }
         });
-        this.drawSprite(sprite, 'red', 10);
     };
     LongGameCanvas.prototype.drawSprite = function (sprite, color, size) {
         if (color === void 0) { color = 'white'; }
@@ -54,7 +75,7 @@ var LongGameCanvas = /** @class */ (function (_super) {
         this.ctx.beginPath();
         var x = sprite.relativeX();
         var y = this.radiansToDeimmal(sprite.angle);
-        this.ctx.fillStyle = sprite.color || color;
+        this.ctx.fillStyle = color;
         // console.log(x, y);
         this.ctx.fillRect(this.scaleX(x) - size / 2, this.scaleY(y) - size / 2, size, size);
         // this.ctx.fill();
