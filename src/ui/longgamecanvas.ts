@@ -22,14 +22,6 @@ export class LongGameCanvas extends GameCanvas {
     draw(app: App) {
         this.ctx.clearRect(0, 0, this.width, this.height);
 
-        // console.log(this.height)
-        for(let i = 0; i < 100; i++) {
-            this.ctx.beginPath();
-            this.ctx.fillStyle = 'white';
-            let yHeight = this.height/100;
-            this.ctx.fillRect(20, i * yHeight, 1, 1);
-            this.ctx.closePath();
-        }
         let player = this.app.sprites[0] as Player;
         // console.log((sprite.angle / (Math.PI * 2)) * this.app.solarSystem.midRadius());
         // console.log('drawing long canvas',sprite.distanceFromCenter,sprite.angle);
@@ -38,16 +30,22 @@ export class LongGameCanvas extends GameCanvas {
 
         this.app.sprites.forEach(sprite => {
             // console.log(sprite.distanceFromCenter,sprite.angle)
-            if (sprite instanceof Actor) {
-                this.drawSprite(sprite, 'red', 4);
-            } else if (sprite instanceof Planetoid) {
+            if (sprite instanceof Planetoid) {
                 this.drawSprite(sprite, 'orange', 10);
             } else if (sprite instanceof Asteroid) {
                 this.drawSprite(sprite, sprite.color, 1);
             } else if (sprite instanceof Mob) {
-                this.drawSprite(sprite, 'green', 2);
+                this.drawSprite(sprite, 'white', 3);
+                this.ctx.beginPath();
+                this.ctx.strokeStyle = 'white';
+                let destx = sprite.destination.relativeX();
+                let desty = this.radiansToDeimmal(sprite.destination.angle);
+                this.ctx.moveTo(this.scaleX(destx), this.scaleY(desty));
+                this.ctx.lineTo(this.scaleX(sprite.relativeX()), this.scaleY(this.radiansToDeimmal(sprite.angle)));
+                this.ctx.stroke();
+                this.drawSprite(sprite.destination, 'yellow', 3);
             } else if (sprite instanceof Player) {
-                this.drawSprite(sprite, 'red', 2);
+                this.drawSprite(sprite, 'red', 5);
 
             } else {
                 this.drawSprite(sprite, 'cyan', 5);

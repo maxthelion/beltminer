@@ -71,7 +71,7 @@ var Actor = /** @class */ (function (_super) {
         // keep the y value within the system circumference
         // console.log(this.y);
         this.y = this.y % systemCircumference;
-        console.log(this.y / systemCircumference);
+        // console.log(this.y / systemCircumference);
         this.angle = (this.y / systemCircumference) * Math.PI * 2;
         // if the angle is less that 0, add 2pi to it
         // if (this.angle < 0) {

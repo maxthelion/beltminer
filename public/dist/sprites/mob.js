@@ -75,9 +75,21 @@ var Mob = /** @class */ (function (_super) {
         // }
     };
     Mob.prototype.moveTowardsPlayer = function () {
-        this.rotation = Math.atan2(this.destination.bandY() - this.y, this.destination.bandY() - this.x);
+        this.rotation = this.getDirectionAcrossMaximumY();
         this.accelerate();
         // console.log("mob move towards player", this.direction, this.destination);
+    };
+    Mob.prototype.getDirectionAcrossMaximumY = function () {
+        // should wrap around and take shortest path across boundary
+        var maxY = this.app.solarSystem.circumference();
+        var ydelta = this.destination.bandY() - this.y;
+        if (ydelta > maxY / 2) {
+            ydelta = ydelta - maxY;
+        }
+        else if (ydelta < -maxY / 2) {
+            ydelta = ydelta + maxY;
+        }
+        return Math.atan2(ydelta, this.destination.bandX() - this.x);
     };
     return Mob;
 }(Actor));

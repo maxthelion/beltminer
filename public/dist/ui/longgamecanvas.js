@@ -17,7 +17,6 @@ import { Planetoid } from '../sprites/planetoid.js';
 import { Asteroid } from '../sprites/asteroid.js';
 import Player from '../player.js';
 import { GameCanvas } from './gamecanvas.js';
-import { Actor } from '../sprites/actor.js';
 import { Mob } from '../sprites/mob.js';
 var LongGameCanvas = /** @class */ (function (_super) {
     __extends(LongGameCanvas, _super);
@@ -34,14 +33,6 @@ var LongGameCanvas = /** @class */ (function (_super) {
     LongGameCanvas.prototype.draw = function (app) {
         var _this = this;
         this.ctx.clearRect(0, 0, this.width, this.height);
-        // console.log(this.height)
-        for (var i = 0; i < 100; i++) {
-            this.ctx.beginPath();
-            this.ctx.fillStyle = 'white';
-            var yHeight = this.height / 100;
-            this.ctx.fillRect(20, i * yHeight, 1, 1);
-            this.ctx.closePath();
-        }
         var player = this.app.sprites[0];
         // console.log((sprite.angle / (Math.PI * 2)) * this.app.solarSystem.midRadius());
         // console.log('drawing long canvas',sprite.distanceFromCenter,sprite.angle);
@@ -49,20 +40,25 @@ var LongGameCanvas = /** @class */ (function (_super) {
         // console.log(y, sprite.angle, this.scaleY(y));
         this.app.sprites.forEach(function (sprite) {
             // console.log(sprite.distanceFromCenter,sprite.angle)
-            if (sprite instanceof Actor) {
-                _this.drawSprite(sprite, 'red', 4);
-            }
-            else if (sprite instanceof Planetoid) {
+            if (sprite instanceof Planetoid) {
                 _this.drawSprite(sprite, 'orange', 10);
             }
             else if (sprite instanceof Asteroid) {
                 _this.drawSprite(sprite, sprite.color, 1);
             }
             else if (sprite instanceof Mob) {
-                _this.drawSprite(sprite, 'green', 2);
+                _this.drawSprite(sprite, 'white', 3);
+                _this.ctx.beginPath();
+                _this.ctx.strokeStyle = 'white';
+                var destx = sprite.destination.relativeX();
+                var desty = _this.radiansToDeimmal(sprite.destination.angle);
+                _this.ctx.moveTo(_this.scaleX(destx), _this.scaleY(desty));
+                _this.ctx.lineTo(_this.scaleX(sprite.relativeX()), _this.scaleY(_this.radiansToDeimmal(sprite.angle)));
+                _this.ctx.stroke();
+                _this.drawSprite(sprite.destination, 'yellow', 3);
             }
             else if (sprite instanceof Player) {
-                _this.drawSprite(sprite, 'red', 2);
+                _this.drawSprite(sprite, 'red', 5);
             }
             else {
                 _this.drawSprite(sprite, 'cyan', 5);
