@@ -30,6 +30,7 @@ var Actor = /** @class */ (function (_super) {
         _this.rotationalAcceleration = 0.05;
         _this.accelerating = false;
         _this.velocity = 0;
+        _this.thrustVector = new Vector(0, 0);
         _this.vector = new Vector(0, 0);
         _this.x = 50;
         _this.y = 50;
@@ -62,6 +63,7 @@ var Actor = /** @class */ (function (_super) {
         this.accelerating = true;
         var thrustVector = new Vector(-this.acceleration, 0);
         thrustVector.rotate(this.rotation);
+        this.thrustVector = thrustVector;
         this.vector.add(thrustVector);
     };
     Actor.prototype.updateCoordinates = function () {
@@ -89,6 +91,7 @@ var Actor = /** @class */ (function (_super) {
     };
     Actor.prototype.stop = function () {
         this.vector = new Vector(0, 0);
+        this.thrustVector = new Vector(0, 0);
     };
     Actor.prototype.systemX = function () {
         return this.distanceFromCenter * Math.cos(this.angle);

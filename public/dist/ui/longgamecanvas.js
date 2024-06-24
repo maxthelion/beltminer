@@ -17,6 +17,7 @@ import { Planetoid } from '../sprites/planetoid.js';
 import { Asteroid } from '../sprites/asteroid.js';
 import Player from '../player.js';
 import { GameCanvas } from './gamecanvas.js';
+import { Actor } from '../sprites/actor.js';
 import { Mob } from '../sprites/mob.js';
 var LongGameCanvas = /** @class */ (function (_super) {
     __extends(LongGameCanvas, _super);
@@ -68,14 +69,35 @@ var LongGameCanvas = /** @class */ (function (_super) {
     LongGameCanvas.prototype.drawSprite = function (sprite, color, size) {
         if (color === void 0) { color = 'white'; }
         if (size === void 0) { size = 1; }
-        this.ctx.beginPath();
         var x = sprite.relativeX();
         var y = this.radiansToDeimmal(sprite.angle);
         this.ctx.fillStyle = color;
-        // console.log(x, y);
-        this.ctx.fillRect(this.scaleX(x) - size / 2, this.scaleY(y) - size / 2, size, size);
-        // this.ctx.fill();
-        this.ctx.closePath();
+        var width = size;
+        var height = size * 100;
+        if (sprite instanceof Actor) {
+            x = this.scaleX(x);
+            y = this.scaleY(y);
+            console.log(x, y);
+            this.ctx.translate(x, y);
+            var hundredeightydegrees = Math.PI;
+            this.ctx.rotate(sprite.rotation - Math.PI / 2);
+            this.drawTriangle(width, height);
+            this.ctx.closePath();
+            this.ctx.resetTransform();
+            this.ctx.fillStyle = 'red';
+            this.ctx.fillRect(x + (sprite.thrustVector.x * 100), y + (sprite.thrustVector.y * 100), 3, 3);
+        }
+        else {
+            // console.log(x, y);
+            this.ctx.fillRect(this.scaleX(x) - size / 2, this.scaleY(y) - size / 2, size, size);
+        }
+    };
+    LongGameCanvas.prototype.drawTriangle = function (width, height) {
+        this.ctx.beginPath();
+        this.ctx.moveTo(-width / 2, 0);
+        this.ctx.lineTo(0, height);
+        this.ctx.lineTo(width / 2, 0);
+        this.ctx.fill();
     };
     LongGameCanvas.prototype.radiansToDeimmal = function (radians) {
         return (radians / (Math.PI * 2));

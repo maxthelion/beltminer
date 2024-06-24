@@ -54,20 +54,45 @@ export class LongGameCanvas extends GameCanvas {
     }
 
     drawSprite(sprite: Sprite, color: string = 'white', size: number = 1) {
-        this.ctx.beginPath();
         let x = sprite.relativeX();
         let y = this.radiansToDeimmal(sprite.angle);
         this.ctx.fillStyle = color;
+        let width = size;
+        let height = size * 100;
+        if (sprite instanceof Actor) {
+            x = this.scaleX(x);
+            y = this.scaleY(y);
+            console.log(x, y);
+            this.ctx.translate(x, y);
+            let hundredeightydegrees = Math.PI;
+            this.ctx.rotate(sprite.rotation - Math.PI / 2);
+            this.drawTriangle(width, height);
+            this.ctx.closePath();
+            this.ctx.resetTransform();
+            this.ctx.fillStyle = 'red'
+            this.ctx.fillRect(
+                x + (sprite.thrustVector.x * 100),
+                y + (sprite.thrustVector.y * 100),
+                3,
+                3
+            )
+        } else {
+            // console.log(x, y);
+            this.ctx.fillRect(
+                this.scaleX(x) - size/2,
+                this.scaleY(y) - size/2,
+                size,
+                size
+            );    
+        }
+    }
 
-        // console.log(x, y);
-        this.ctx.fillRect(
-            this.scaleX(x) - size/2,
-            this.scaleY(y) - size/2,
-            size,
-            size
-        );
-        // this.ctx.fill();
-        this.ctx.closePath();
+    drawTriangle(width: number, height: number) {
+        this.ctx.beginPath();
+        this.ctx.moveTo(-width/2, 0);
+        this.ctx.lineTo(0, height);
+        this.ctx.lineTo(width/2, 0);
+        this.ctx.fill();
     }
 
     radiansToDeimmal(radians: number) {

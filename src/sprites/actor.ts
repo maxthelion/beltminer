@@ -23,6 +23,7 @@ export class Actor extends Sprite {
     accelerating: boolean = false;
     velocity: number = 0;
     vector: Vector;
+    thrustVector: Vector = new Vector(0, 0);
 
     constructor(app: App) {
         super(app);
@@ -65,6 +66,7 @@ export class Actor extends Sprite {
         this.accelerating = true;
         let thrustVector = new Vector(-this.acceleration, 0);
         thrustVector.rotate(this.rotation);
+        this.thrustVector = thrustVector;
         this.vector.add(thrustVector);
     }
 
@@ -99,6 +101,7 @@ export class Actor extends Sprite {
 
     stop(){
         this.vector = new Vector(0, 0);
+        this.thrustVector = new Vector(0, 0);
     }
 
     systemX() {
